@@ -86,8 +86,12 @@ WSGI_APPLICATION = 'myApp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'summerlearn_db',
+        'USER': 'summerlearn',
+        'PASSWORD': 'yfnIgZZd2JOzxOfIzE5gWFSxSNFwAxOe',
+        'HOST': 'dpg-cr554d52ng1s73eb1sh0-a.oregon-postgres.render.com',
+        'PORT': '5432',
     }
 }
 
