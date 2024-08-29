@@ -6,7 +6,7 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
-
+from django.contrib.auth.hashers import check_password
 
 class Activities(models.Model):
     activities_id = models.BigAutoField(primary_key=True)
@@ -166,15 +166,18 @@ class Subscriptions(models.Model):
 
 class Users(models.Model):
     users_id = models.BigAutoField(primary_key=True)
-    users_name = models.CharField()
-    users_photo = models.CharField(blank=True, null=True)
+    users_name = models.CharField(max_length=255)
+    users_photo = models.CharField(max_length=255, blank=True, null=True)
     users_birthdate = models.DateField()
-    users_mail = models.CharField()
-    users_password = models.CharField()
-    users_phone = models.CharField(blank=True, null=True)
+    users_mail = models.EmailField(unique=True)  
+    users_password = models.CharField(max_length=128) 
+    users_phone = models.CharField(max_length=20, blank=True, null=True)
     users_rol = models.ForeignKey(Rol, models.DO_NOTHING, db_column='users_rol')
     users_tour = models.BooleanField()
     users_status = models.ForeignKey(Status, models.DO_NOTHING, db_column='users_status')
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.users_password)
 
     class Meta:
         managed = False

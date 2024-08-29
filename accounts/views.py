@@ -1,29 +1,36 @@
+from .controllers.serializers import RolSeralizer, StatusSerializer, UsersSerializer
+from myApp.models import Rol, Status, Users
 from django.http import JsonResponse
-from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
 
-from myApp.models import Rol, Status
-from .models import Users
-from .serialize import RolSeralizer, StatusSerializer, UserSerializer
-from rest_framework import viewsets, permissions
-# Create your views here.
+###############Ver lista de usuarios###############
 
+@api_view(['GET'])
+@permission_classes((permissions.AllowAny,))
+def user_list(request):
+    if request.method == 'GET':
+        user_all = Users.objects.all()  # Obtiene todos los usuarios
+        serializer = UsersSerializer(user_all, many=True)  # Serializa los datos
+        return Response(serializer.data)  # Devuelve la respuesta en JSON
 
-def index(request):
-    return render(request, 'index.html')
+###############Ver lista de status###############
 
+@api_view(['GET',])
+@permission_classes((permissions.AllowAny,))
+def status_list(request):
+    if request.method == 'GET':
+        status = Status.objects.all() 
+        serializer = StatusSerializer(status, many=True)
+        return Response(serializer.data)
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = Users.objects.all() # Define la consulta que será ejecutada por el ViewSet
-    permission_classes = [permissions.AllowAny]# Define la lista de permisos requeridos para acceder a la vista
-    serializer_class = UserSerializer# Define el serializador que será utilizado por el ViewSet
+###############Ver lista de roles###############
 
-
-class StatusViewSet(viewsets.ModelViewSet):
-    queryset = Status.objects.all()
-    permission_classes = [permissions.AllowAny]
-    serializer_class = StatusSerializer
-
-class RolViewSet(viewsets.ModelViewSet):
-    queryset = Rol.objects.all()
-    permission_classes = [permissions.AllowAny]
-    serializer_class = RolSeralizer
+@api_view(['GET',])
+@permission_classes((permissions.AllowAny,))
+def rol_list(request):
+    if request.method == 'GET':
+        rol = Rol.objects.all()
+        serializer = RolSeralizer(rol, many=True)
+        return Response(serializer.data)

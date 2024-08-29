@@ -1,13 +1,16 @@
-from django.urls import path
-from rest_framework.routers import DefaultRouter
-from .views import RolViewSet, StatusViewSet, UserViewSet
+from django.urls import include, path
+from .views import status_list, rol_list
+from .authenticate import register_user, login_user
+from accounts import views, authenticate
 
-# Importa el enrutador predeterminado de Django REST Framework
-router = DefaultRouter()
 
-# Registra el ViewSet de 'User' en el enrutador
-router.register(r'users', UserViewSet)
-router.register(r'status', StatusViewSet)
-router.register(r'rol', RolViewSet)
-# Define la lista de rutas del enrutador
-urlpatterns = router.urls
+urlpatterns = [
+
+    path('users/', views.user_list),  
+    path('status/', views.status_list), 
+    path('rol/', views.rol_list),
+    path('register/', authenticate.register_user),
+    path('login/', authenticate.login_user),
+]
+
+
