@@ -1,16 +1,18 @@
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 from .views import status_list, rol_list
-from .authenticate import register_user, login_user
-from accounts import views, authenticate
+from accounts import views
+from .authenticate import Authenticate  # Asegúrate de que Authenticate esté correctamente importado
 
+# Configuración del Router
+router = DefaultRouter()
+router.register(r'users', Authenticate, basename='users')
 
 urlpatterns = [
+    # Incluir las URLs del Router
+    path('', include(router.urls)),
 
-    path('users/', views.user_list),  
-    path('status/', views.status_list), 
-    path('rol/', views.rol_list),
-    path('register/', authenticate.register_user),
-    path('login/', authenticate.login_user),
+    # Rutas personalizadas
+    path('status/', status_list, name='status-list'),
+    path('rol/', rol_list, name='rol-list'),
 ]
-
-
