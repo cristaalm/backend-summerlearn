@@ -1,17 +1,21 @@
-from .controllers.serializers import RolSeralizer, StatusSerializer, UsersSerializer
+from .controllers.serializers import RolSeralizer, StatusSerializer, UsersSerializer, RegisterSerializer
 from accounts.models import Rol, Status, UserData
-from django.http import JsonResponse
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-# from rest_framework import permissions
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from accounts.controllers.serializers import RegisterSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny  # Permite el acceso a todos, no requiere autenticación
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken  # Import RefreshToken for JWT tokens
 from django.db import IntegrityError
 
+
+########################################################################################
+# Importaciones de Django REST Framework
+from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny  
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import permissions
+
+
+########################################################################################
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]  # Allow anyone to access the registration endpoint
@@ -39,25 +43,27 @@ class RegisterView(APIView):
         # Return any serializer validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-############### UserViewSet ###############
+
+########################################################################################
 
 class UserViewSet(viewsets.ModelViewSet):
-# class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = [IsAuthenticated]
     queryset = UserData.objects.all()
     serializer_class = UsersSerializer
-    # permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
-############### StatusViewSet ###############
 
-class StatusViewSet(viewsets.ReadOnlyModelViewSet):
+########################################################################################
+
+class StatusViewSet(viewsets.ModelViewSet):
     queryset = Status.objects.all()
     serializer_class = StatusSerializer
-    # permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
+    
 
-############### RolViewSet ###############
+########################################################################################
 
 class RolViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSeralizer
-    # permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]

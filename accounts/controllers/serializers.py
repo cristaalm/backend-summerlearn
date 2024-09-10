@@ -2,12 +2,18 @@ from rest_framework import serializers
 from accounts.models import UserData, Status, Rol
 from django.contrib.auth.hashers import make_password
 
+
+########################################################################################
+# Define un serializer basado en el modelo 'UserData'.
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
         fields = '__all__'
         read_only_fields = ('id',)
-    
+
+
+########################################################################################
+# Define un serializer basado en el modelo 'UserData'.
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     
@@ -29,7 +35,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         
         return user
-    
+
+
+########################################################################################
+
 # Define un serializer basado en el modelo 'Status'.
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,6 +49,9 @@ class StatusSerializer(serializers.ModelSerializer):
 
         read_only_fields = ('status_id',)
 
+
+########################################################################################
+# Define un serializer basado en el modelo 'Rol'.
 class RolSeralizer(serializers.ModelSerializer):
     class Meta:
         model = Rol
