@@ -1,15 +1,20 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, StatusViewSet, RolViewSet
-from accounts import views
-from .authenticate import Authenticate  # Asegúrate de que Authenticate esté correctamente importado
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .authenticate import Authenticate
+from .views import RegisterView
 
 # Configuración del Router
 router = DefaultRouter()
-router.register(r'users', Authenticate, basename='autehnticate')
-router.register(r'users', UserViewSet, basename='users')
-router.register(r'rol', StatusViewSet, basename='status')
-router.register(r'status', RolViewSet, basename='rol')
+router.register(r'auth', Authenticate, basename='authenticate')  # Cambié 'users' a 'auth'
+# router.register(r'users', UserViewSet, basename='users')
+router.register(r'rol', RolViewSet, basename='rol')
+router.register(r'status', StatusViewSet, basename='status')
 
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('register/', RegisterView.as_view(), name='register'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('', include(router.urls)),  # Incluye las URLs del router
+]
