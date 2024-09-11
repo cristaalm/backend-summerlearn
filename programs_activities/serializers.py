@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from accounts.models import Areas, Programs
+from myApp.models import Areas, Programs
 
 
 class AreasSerializer(serializers.ModelSerializer):

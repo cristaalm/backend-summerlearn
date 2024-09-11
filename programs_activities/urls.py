@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from programs_activities.serializers import AreasSerializer
-from accounts.models import Areas
+from myApp.models import Areas
 from .views import AreasViewSet, ProgramsViewSet
 
 

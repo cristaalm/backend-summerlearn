@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
-    'accounts',
     'donations',
     'programs_activities',
     'performance_beneficiaries',
@@ -156,7 +155,7 @@ REST_FRAMEWORK = {
 
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', # pedir tokens a todas las API's
+        'rest_framework.permissions.AllowAny', # pedir tokens a todas las API's
     ],
 }
 
@@ -179,4 +178,4 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-AUTH_USER_MODEL = 'accounts.UserData'
+AUTH_USER_MODEL = 'myApp.UserData'
