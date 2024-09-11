@@ -70,7 +70,8 @@ class Areas(models.Model):
     areas_id = models.BigAutoField(primary_key=True)
     areas_name = models.CharField(max_length=255)
     areas_date = models.DateField()
-    areas_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='areas_user')
+    # areas_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='areas_user')
+    areas_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='areas_user', to_field='id')
     areas_status = models.BooleanField()
 
     class Meta:
