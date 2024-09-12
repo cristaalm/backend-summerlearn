@@ -13,3 +13,12 @@ class ProgramsSerializer(serializers.ModelSerializer):
         model = Programs
         fields = '__all__'
         read_only_fields = ('program_id',)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['programs_user'] = {
+            'id': instance.programs_user.id,
+            'name': instance.programs_user.name,
+            # Otros campos del usuario si los necesitas
+        }
+        return representation

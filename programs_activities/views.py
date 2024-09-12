@@ -33,3 +33,20 @@ class ProgramsViewSet(viewsets.ModelViewSet):
     queryset = Programs.objects.all()
     serializer_class = ProgramsSerializer
     permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        user_id = request.user.id
+        data['programs_user'] = user_id  
+
+        serializer = self.get_serializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response({
+            "message": "Program successfully created",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
