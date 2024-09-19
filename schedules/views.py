@@ -1,3 +1,50 @@
-from django.shortcuts import render
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework import permissions
+from myApp.models import DaysActivities, Schedules
+from .serializers import DaysActivitiesSerializer, SchedulesSerializer
 
-# Create your views here.
+class DaysActivitiesSerializer(viewsets.ModelViewSet):
+    queryset = DaysActivities.objects.all()
+    serializer_class = DaysActivitiesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        user_id = request.user.id
+        data['days_activities_id'] = user_id  
+
+        serializer = self.get_serializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response({
+            "message": "Day successfully created",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
+        
+class SchedulesSerializer(viewsets.ModelViewSet):
+    queryset = Schedules.objects.all()
+    serializer_class = SchedulesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        user_id = request.user.id
+        data['schedules_id'] = user_id  
+
+        serializer = self.get_serializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response({
+            "message": "Day successfully created",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
