@@ -2,10 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import permissions
-from myApp.models import Areas, Programs
-from .serializers import AreasSerializer, ProgramsSerializer
-
-# Create your views here.
+from myApp.models import Areas, Programs, Activities, Objectives
+from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer
 
 class AreasViewSet(viewsets.ModelViewSet):
     queryset = Areas.objects.all()
@@ -48,5 +46,50 @@ class ProgramsViewSet(viewsets.ModelViewSet):
 
         return Response({
             "message": "Program successfully created",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
+        
+class ActivitiesViewSet(viewsets.ModelViewSet):
+    queryset = Activities.objects.all()
+    serializer_class = ActivitiesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        user_id = request.user.id
+        data['activities_user'] = user_id
+
+        # Crea una instancia del serializer con los datos actualizados
+        serializer = self.get_serializer(data=data)
+
+        # Valida los datos
+        serializer.is_valid(raise_exception=True)
+
+        # Guarda la nueva instancia de 'Activities'
+        self.perform_create(serializer)
+
+        # Devuelve una respuesta con un mensaje de éxito y los datos creados
+        return Response({
+            "message": "Activity successfully created",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+class ObjectivesViewSet(viewsets.ModelViewSet):
+    queryset = Objectives.objects.all()
+    serializer_class = ObjectivesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+
+        serializer = self.get_serializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response({
+            "message": "Objective successfully created",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)

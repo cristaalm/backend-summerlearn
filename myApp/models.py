@@ -79,6 +79,7 @@ class Areas(models.Model):
         
 class Programs(models.Model):
     programs_id = models.BigAutoField(primary_key=True)
+    programs_name = models.CharField(max_length=255)
     programs_start = models.DateField()
     programs_end = models.DateField()
     programs_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='programs_user')
@@ -151,19 +152,27 @@ class Bills(models.Model):
         db_table = 'bills'
 
 class Days(models.Model):
-    days_id = models.BigAutoField(primary_key=True)
-    days_description = models.CharField(max_length=255)
-    days_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='days_activity')
+    day_id = models.BigAutoField(primary_key=True)
+    day_description = models.CharField(max_length=255)
 
     class Meta:
         managed = True
         db_table = 'days'
         
+class DaysActivities(models.Model):
+    days_activities_id = models.BigAutoField(primary_key=True)
+    days_activities_days = models.ForeignKey('Days', models.DO_NOTHING, db_column='days_activities_days')
+    days_activities_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='days_activities_activity')
+
+    class Meta:
+        managed = True
+        db_table = 'days_activities'
+        
 class Schedules(models.Model):
     schedules_id = models.BigAutoField(primary_key=True)
     schedules_start = models.TimeField()
     schedules_duration = models.TimeField()
-    schedules_day = models.ForeignKey('Days', models.DO_NOTHING, db_column='schedules_day')
+    schedules_day = models.ForeignKey('DaysActivities', models.DO_NOTHING, db_column='schedules_day')
 
     class Meta:
         managed = True
