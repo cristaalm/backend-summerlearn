@@ -8,6 +8,13 @@ class AreasSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('areas_id',)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['areas_user'] = {
+            'id': instance.areas_user.id,
+            'name': instance.areas_user.name,
+        }
+        return representation
 class ProgramsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Programs
