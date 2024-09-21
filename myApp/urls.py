@@ -8,7 +8,7 @@ from django.contrib import admin
 ########################################################################################
 # Configuración del Router
 router = DefaultRouter()
-router.register(r'auth', Authenticate, basename='authenticate')  # Cambié 'users' a 'auth'
+router.register(r'auth', Authenticate, basename='authenticate')
 router.register(r'users', UserViewSet, basename='users')
 router.register(r'rol', RolViewSet, basename='rol')
 router.register(r'status', StatusViewSet, basename='status')

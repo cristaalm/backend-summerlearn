@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny  
 from rest_framework import status
@@ -49,7 +50,17 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
+    
+    # Custom action to filter users by id_rol
+    @action(detail=False, methods=['get'], url_path='by-id-rol')
+    def getByRol(self, request):
+        id_rol = request.query_params.get('id_rol', None)
+        if id_rol:
+            # Filtra y selecciona solo los campos 'id' y 'name'
+            users_by_rol = UserData.objects.filter(users_rol=id_rol).values('id', 'name')
+            return Response(users_by_rol)  # Ya no es necesario usar el serializer, ya que solo devuelves campos seleccionados
+        else:
+            return Response({'error': 'id_rol no proporcionado'}, status=400)
 
 ########################################################################################
 
