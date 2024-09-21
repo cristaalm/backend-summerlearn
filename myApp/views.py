@@ -48,6 +48,7 @@ class RegisterView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = UserData.objects.all()
     serializer_class = UsersSerializer
+<<<<<<< Updated upstream
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
@@ -61,6 +62,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(users_by_rol)  # Ya no es necesario usar el serializer, ya que solo devuelves campos seleccionados
         else:
             return Response({'error': 'id_rol no proporcionado'}, status=400)
+=======
+    # permission_classes = [permissions.IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+
+>>>>>>> Stashed changes
 
 ########################################################################################
 
