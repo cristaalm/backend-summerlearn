@@ -13,6 +13,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
+from rest_framework.reverse import reverse 
 ########################################################################################
 
 class RegisterView(APIView):
@@ -65,3 +66,26 @@ class RolViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSeralizer
     permission_classes = [permissions.AllowAny]
+
+########################################################################################
+
+# Custom APIVIEW para el API Root
+
+class CustomAPIRootView(APIView):
+
+    # Vista personalizada para el API Root. Añadir manualmente las URLs de las otras apps para que aparezcan en el API Root
+
+    def get(self, request, *args, **kwargs):
+        return Response({
+            'users': reverse('users-list', request=request, format=kwargs.get('format')),
+            'roles': reverse('rol-list', request=request, format=kwargs.get('format')),
+            'statuses': reverse('status-list', request=request, format=kwargs.get('format')),
+            'areas': reverse('areas-list', request=request, format=kwargs.get('format')),
+            'programs': reverse('programs-list', request=request, format=kwargs.get('format')),
+            'activities': reverse('activities-list', request=request, format=kwargs.get('format')),
+            'days': reverse('days-list', request=request, format=kwargs.get('format')),
+            'schedules': reverse('schedules-list', request=request, format=kwargs.get('format')),
+            'donations': reverse('donations-list', request=request, format=kwargs.get('format')),
+            'bills': reverse('bills-list', request=request, format=kwargs.get('format')),
+            'children': reverse('childrens-list', request=request, format=kwargs.get('format')),
+        })
