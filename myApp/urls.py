@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, StatusViewSet, RolViewSet, RegisterView
+from .views import CustomAPIRootView, UserViewSet, StatusViewSet, RolViewSet, RegisterView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .authenticate import Authenticate
 from django.contrib import admin
@@ -24,5 +24,6 @@ urlpatterns = [
     path('', include('programs_activities.urls')),
     path('', include('schedules.urls')),
     path('', include('donations.urls')),
+    path('', include('children.urls')),
     path('', include(router.urls)),  # Incluye las URLs del router
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
