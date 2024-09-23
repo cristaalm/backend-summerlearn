@@ -91,10 +91,10 @@ WSGI_APPLICATION = 'myApp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'summerlearn_db',
+        'NAME': 'summerlearn',
         'USER': 'summerlearn',
-        'PASSWORD': 'yfnIgZZd2JOzxOfIzE5gWFSxSNFwAxOe',
-        'HOST': 'dpg-cr554d52ng1s73eb1sh0-a.oregon-postgres.render.com',
+        'PASSWORD': 'vJ8CwfmDGiMdm75rmfuSQgiq5f4Zu55S',
+        'HOST': 'dpg-crouo9lsvqrc739lmj9g-a.oregon-postgres.render.com',
         'PORT': '5432',
     }
 }
