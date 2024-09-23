@@ -71,9 +71,19 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
 
         # Devuelve una respuesta con un mensaje de éxito y los datos creados
         return Response({
-            "message": "Activity successfully created",
+            "message": "Actividad creada exitosamente",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
+
+    # Sobrescribe el método destroy para personalizar la respuesta al eliminar
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        
+        # Devuelve un mensaje de confirmación
+        return Response({
+            "message": "Actividad eliminada exitosamente"
+        }, status=status.HTTP_200_OK)
 
 class ObjectivesViewSet(viewsets.ModelViewSet):
     queryset = Objectives.objects.all()

@@ -113,6 +113,7 @@ class Donations(models.Model):
     donations_id = models.BigAutoField(primary_key=True)
     donations_concept = models.CharField(max_length=255)
     donations_quantity = models.FloatField()
+    donations_spent = models.FloatField(null=True)
     donations_date = models.DateField()
     donations_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='donations_user')
 
