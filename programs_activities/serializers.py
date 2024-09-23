@@ -8,6 +8,14 @@ class AreasSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('areas_id',)
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['areas_user'] = {
+            'id': instance.areas_user.id,
+            'name': instance.areas_user.name,
+        }
+        return representation
+    
 class ProgramsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Programs
@@ -19,6 +27,10 @@ class ProgramsSerializer(serializers.ModelSerializer):
         representation['programs_user'] = {
             'id': instance.programs_user.id,
             'name': instance.programs_user.name,
+        }
+        representation['programs_area'] = {
+            'id': instance.programs_area.areas_id,
+            'name': instance.programs_area.areas_name,
         }
         return representation
     
@@ -33,14 +45,11 @@ class ActivitiesSerializer(serializers.ModelSerializer):
         representation['activities_program'] = {
             'id': instance.activities_program.programs_id,
             'name': instance.activities_program.programs_name,
+            'area':instance.activities_program.programs_area.areas_name
         }
         representation['activities_user'] = {
             'id': instance.activities_user.id,
             'name': instance.activities_user.name,
-        }
-        representation['activities_area'] = {
-            'id': instance.activities_area.areas_id,
-            'name': instance.activities_area.areas_name,
         }
         return representation
 

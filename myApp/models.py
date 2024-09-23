@@ -84,6 +84,7 @@ class Programs(models.Model):
     programs_end = models.DateField()
     programs_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='programs_user')
     programs_status = models.ForeignKey('Status', models.DO_NOTHING, db_column='programs_status')
+    programs_area = models.ForeignKey('Areas', models.DO_NOTHING, db_column='programs_area')
 
     class Meta:
         managed = True
@@ -112,6 +113,7 @@ class Donations(models.Model):
     donations_id = models.BigAutoField(primary_key=True)
     donations_concept = models.CharField(max_length=255)
     donations_quantity = models.FloatField()
+    donations_spent = models.FloatField(null=True)
     donations_date = models.DateField()
     donations_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='donations_user')
 
@@ -192,12 +194,11 @@ class Objectives(models.Model):
 class Activities(models.Model):
     activities_id = models.BigAutoField(primary_key=True)
     activities_name = models.CharField(max_length=255)
-    activities_area = models.ForeignKey('Areas', models.DO_NOTHING, db_column='activities_area')
     activities_description = models.CharField(max_length=255)
     activities_program = models.ForeignKey('Programs', models.DO_NOTHING, db_column='activities_program')
     activities_date = models.DateField()
     activities_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='activities_user')
-    areas_status = models.BooleanField()
+    activities_status = models.BooleanField()
 
     class Meta:
         managed = True

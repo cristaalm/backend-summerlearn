@@ -28,3 +28,5 @@ class BillsViews(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
     
+
+    
