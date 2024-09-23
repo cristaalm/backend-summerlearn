@@ -1,7 +1,9 @@
 from .controllers.serializers import RolSeralizer, StatusSerializer, UsersSerializer, RegisterSerializer
 from myApp.models import Rol, Status, UserData
+from django.core.files.storage import default_storage
 from django.db import IntegrityError
-
+import os
+import uuid
 
 ########################################################################################
 # Importaciones de Django REST Framework
@@ -17,29 +19,34 @@ from rest_framework import permissions
 ########################################################################################
 
 class RegisterView(APIView):
-    permission_classes = [AllowAny]  # Allow anyone to access the registration endpoint
+    permission_classes = [AllowAny]
 
     def post(self, request):
+        # validamos si el request es de tipo multipart/form-data
+        if request.content_type !=  'application/json':
+            # Manejar la imagen # Extraer la imagen del request
+            users_photo = request.data.get('users_photo', None)
+
+            if isinstance(users_photo, str) != True and users_photo and hasattr(users_photo, 'read'):
+                # Caso FormData: Subir el archivo a un directorio y guardar la ruta
+                filename = f"{uuid.uuid4()}.jpg"  # Generar nombre único
+                path = os.path.join('usersImages', filename)
+                default_storage.save(path, users_photo)  # Aquí 'users_photo' debe ser un archivo
+                request.data['users_photo'] = f'media/usersImages/{filename}'
+
         serializer = RegisterSerializer(data=request.data)
+
         if serializer.is_valid():
             try:
-                # Save the user, ensuring unique constraints are handled
                 user = serializer.save()
-                
-                # Generate JWT refresh and access tokens
                 refresh = RefreshToken.for_user(user)
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 }, status=status.HTTP_201_CREATED)
-            
             except IntegrityError:
-                # Handle cases where unique fields (e.g., name, email) violate the constraints
-                return Response({
-                    "error": "A user with this information already exists."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "A user with this information already exists."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Return any serializer validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
