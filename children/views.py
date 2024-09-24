@@ -15,12 +15,7 @@ class ChildrensViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-
-        user_id = request.user.id
-        data['children_user'] = user_id  
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 

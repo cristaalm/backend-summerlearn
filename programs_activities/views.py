@@ -13,12 +13,7 @@ class AreasViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-
-        user_id = request.user.id
-        data['areas_user'] = user_id  
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -36,12 +31,7 @@ class ProgramsViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-
-        user_id = request.user.id
-        data['programs_user'] = user_id  
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -59,32 +49,27 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
-        data = request.data
+        # Create a serializer instance with the provided data
+        serializer = self.get_serializer(data=request.data)
 
-        user_id = request.user.id
-        data['activities_user'] = user_id
-
-        # Crea una instancia del serializer con los datos actualizados
-        serializer = self.get_serializer(data=data)
-
-        # Valida los datos
+        # Validate the data
         serializer.is_valid(raise_exception=True)
 
-        # Guarda la nueva instancia de 'Activities'
+        # Save the new 'Activities' instance
         self.perform_create(serializer)
 
-        # Devuelve una respuesta con un mensaje de éxito y los datos creados
+        # Return a response with a success message and the created data
         return Response({
             "message": "Actividad creada exitosamente",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
 
-    # Sobrescribe el método destroy para personalizar la respuesta al eliminar
+    # Override the destroy method to customize the response when deleting
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         
-        # Devuelve un mensaje de confirmación
+        # Return a confirmation message
         return Response({
             "message": "Actividad eliminada exitosamente"
         }, status=status.HTTP_200_OK)
@@ -96,9 +81,7 @@ class ObjectivesViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
         
     def create(self, request, *args, **kwargs):
-        data = request.data
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
