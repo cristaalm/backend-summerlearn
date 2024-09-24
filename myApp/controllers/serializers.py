@@ -1,6 +1,88 @@
 from rest_framework import serializers
 from myApp.models import UserData, Status, Rol
 from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import padding
+import base64
+import hashlib
+import os
+
+def generate_key(passphrase: str) -> bytes:
+    # Hash the passphrase to create a 256-bit (32 bytes) key
+    return hashlib.sha256(passphrase.encode()).digest()
+
+
+# Function to encrypt text
+def encrypt(plain_text: str, passphrase: str) -> str:
+    key = generate_key(passphrase)
+    iv = os.urandom(16)  # Generate a random initialization vector
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+
+    # Pad the plain text to be a multiple of the block size
+    padder = padding.PKCS7(algorithms.AES.block_size).padder()
+    padded_data = padder.update(plain_text.encode()) + padder.finalize()
+
+    # Encrypt the data
+    encrypted = encryptor.update(padded_data) + encryptor.finalize()
+
+    # Return the base64 encoded string of the iv and encrypted data
+    return base64.b64encode(iv + encrypted).decode('utf-8')
+
+# Function to decrypt text
+def decrypt(encrypted_text: str, passphrase: str) -> str:
+    key = generate_key(passphrase)
+    # Decode the base64 encoded string
+    data = base64.b64decode(encrypted_text.encode('utf-8'))
+
+    # Extract the IV from the beginning of the data
+    iv = data[:16]
+    encrypted_data = data[16:]
+
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+
+    # Decrypt the data
+    padded_data = decryptor.update(encrypted_data) + decryptor.finalize()
+
+    # Unpad the decrypted data
+    unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+    plain_text = unpadder.update(padded_data) + unpadder.finalize()
+
+    return plain_text.decode('utf-8')
+
+class DecryptSerializer(serializers.Serializer):
+    encrypted_text = serializers.CharField(max_length=255)
+    # passphrase = serializers.CharField(max_length=255)
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+     
+        # Llamar al método `get_token` del padre para obtener el token
+        token = super().get_token(user)
+
+        # Obtener el ID del usuario y buscar su registro en la base de datos
+        user_id = user.id
+        registro_usuario = UserData.objects.get(id=user_id)
+
+        # Encriptar el rol del usuario usando una passphrase
+        passphrase = 'cuatro_veinte'  # Asegúrate de que esta sea una passphrase segura
+        rol_encriptado = encrypt(str(registro_usuario.users_rol.rol_id), passphrase)
+        print("Texto Original: ", str(registro_usuario.users_rol.rol_id))
+        print("Encriptado: ", encrypt(rol_encriptado,passphrase))
+        print("Desencriptado: ",decrypt(rol_encriptado,passphrase))
+        
+        # Añadir datos personalizados al token
+        token['username'] = user.name
+        token['rol'] = rol_encriptado  # Añadir el rol encriptado
+
+        # print(token)
+        return token
+
 
 
 ########################################################################################

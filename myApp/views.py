@@ -1,4 +1,4 @@
-from .controllers.serializers import RolSeralizer, StatusSerializer, UsersSerializer, RegisterSerializer
+from .controllers.serializers import MyTokenObtainPairSerializer, RolSeralizer, StatusSerializer, UsersSerializer, RegisterSerializer, DecryptSerializer, decrypt
 from myApp.models import Rol, Status, UserData
 from django.core.files.storage import default_storage
 from django.db import IntegrityError
@@ -17,8 +17,26 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.reverse import reverse 
+from rest_framework_simplejwt.views import TokenObtainPairView
 ########################################################################################
 
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+   
+class DecryptView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = DecryptSerializer(data=request.data)
+        if serializer.is_valid():
+            encrypted_text = serializer.validated_data['encrypted_text']
+            try:
+                decrypted_text = decrypt(encrypted_text, "cuatro_veinte")  # Call the decrypt function
+                return Response({'decrypted_text': decrypted_text}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 

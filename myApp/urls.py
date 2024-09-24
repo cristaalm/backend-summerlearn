@@ -3,9 +3,11 @@ from rest_framework.routers import DefaultRouter
 from .views import CustomAPIRootView, UserViewSet, StatusViewSet, RolViewSet, RegisterView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .authenticate import Authenticate
+from .views import MyTokenObtainPairView
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import DecryptView
 
 ########################################################################################
 # Configuración del Router
@@ -18,8 +20,10 @@ router.register(r'status', StatusViewSet, basename='status')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', RegisterView.as_view(), name='register'),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), 
+    # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), 
+    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/decrypt/', DecryptView.as_view(), name='decrypt'),
 
     # Custom API Root: Para poder cargar la vista personalizada del API Root en la URL raíz del proyecto (http://localhost:8000/)
     path('', CustomAPIRootView.as_view(), name='api-root'),
