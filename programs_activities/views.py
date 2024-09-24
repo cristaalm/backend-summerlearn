@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from myApp.models import Areas, Programs, Activities, Objectives
 from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer
 
@@ -9,7 +10,8 @@ class AreasViewSet(viewsets.ModelViewSet):
     queryset = Areas.objects.all()
     serializer_class = AreasSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+    authentication_classes = [JWTAuthentication]
+
     def create(self, request, *args, **kwargs):
         data = request.data
 
@@ -30,7 +32,8 @@ class AreasViewSet(viewsets.ModelViewSet):
 class ProgramsViewSet(viewsets.ModelViewSet):
     queryset = Programs.objects.all()
     serializer_class = ProgramsSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -53,6 +56,7 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
     queryset = Activities.objects.all()
     serializer_class = ActivitiesSerializer
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -89,7 +93,8 @@ class ObjectivesViewSet(viewsets.ModelViewSet):
     queryset = Objectives.objects.all()
     serializer_class = ObjectivesSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+    authentication_classes = [JWTAuthentication]
+        
     def create(self, request, *args, **kwargs):
         data = request.data
 
