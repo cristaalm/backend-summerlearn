@@ -166,3 +166,4 @@ cython_debug/
 
 # Editor directories and files
 .vscode/*
+.vscode/settings.json

@@ -8,4 +8,6 @@ router = DefaultRouter()
 router.register(r'donations', DonationsViews, basename='donations')
 router.register(r'bills', BillsViews, basename='bills')
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls)),  # Rutas CRUD para Donations
+]
