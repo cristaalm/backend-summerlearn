@@ -146,8 +146,10 @@ class PerformanceBeneficiaries(models.Model):
 class Bills(models.Model):
     bills_id = models.BigAutoField(primary_key=True)
     bills_concept = models.CharField(max_length=255)
+    bills_amount = models.FloatField(null=True)
     bills_date = models.DateField()
     bills_donations = models.ForeignKey('Donations', models.DO_NOTHING, db_column='bills_donations')
+    bills_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='bills_user')
 
     class Meta:
         managed = True
