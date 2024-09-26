@@ -90,14 +90,23 @@ class Programs(models.Model):
         managed = True
         db_table = 'programs'
         
-class Subscriptions(models.Model):
-    subscriptions_id = models.BigAutoField(primary_key=True)
-    subscriptions_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='subscriptions_activity')
-    subscriptions_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='subscriptions_user')
+class SubscriptionsVolunteer(models.Model):
+    subscriptions_volunteer_id = models.BigAutoField(primary_key=True)
+    subscriptions_volunteer_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='subscriptions_volunteer_activity')
+    subscriptions_volunteer_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='subscriptions_volunteer_user')
 
     class Meta:
         managed = True
-        db_table = 'subscriptions'
+        db_table = 'subscriptions_volunteer'
+
+class SubscriptionsChildren(models.Model):
+    subscriptions_children_id = models.BigAutoField(primary_key=True)
+    subscriptions_children_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='subscriptions_children_activity')
+    subscriptions_children_child = models.ForeignKey('Children', models.DO_NOTHING, db_column='subscriptions_children_child')
+
+    class Meta:
+        managed = True
+        db_table = 'subscriptions_children'
         
 class Logs(models.Model):
     logs_id = models.BigAutoField(primary_key=True)
@@ -135,8 +144,7 @@ class Children(models.Model):
         
 class PerformanceBeneficiaries(models.Model):
     performance_beneficiaries_id = models.BigAutoField(primary_key=True)
-    performance_beneficiaries_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='performance_beneficiaries_activity')
-    performance_beneficiaries_children = models.ForeignKey('Children', models.DO_NOTHING, db_column='performance_beneficiaries_children')
+    performance_beneficiaries_subscription = models.ForeignKey('SubscriptionsChildren', models.DO_NOTHING, db_column='performance_beneficiaries_subscription',null=True)
     performance_beneficiaries_value = models.FloatField()
 
     class Meta:
