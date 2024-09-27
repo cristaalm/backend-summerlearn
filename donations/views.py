@@ -1,17 +1,23 @@
+# myApp/views.py
+
 from django.shortcuts import render
 from myApp.models import Donations, Bills
 from donations.controllers.donationSerializers import DonationSerializer, BillsSerializer
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 import datetime
 from django.utils.timezone import now
 from django.db.models import F, Q  # Asegúrate de incluir esta línea
+from django.http import HttpResponse
 
+# Importar la función de exportación a Excel
+from .utils.excel.export_bills import export_bills_to_excel
+
+###########################################################################################
 class DonationsViews(viewsets.ModelViewSet):
     queryset = Donations.objects.all()
     serializer_class = DonationSerializer
@@ -66,17 +72,14 @@ class DonationsViews(viewsets.ModelViewSet):
         serializer = DonationSerializer(available_donations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    
 
-
-
-
-##########################################################################################
+###########################################################################################
 class BillsViews(viewsets.ModelViewSet):
     queryset = Bills.objects.all()
     serializer_class = BillsSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    
 
-    
+    @action(detail=False, methods=['get'], url_path='exportar-excel')
+    def exportar_bills_excel(self, request):
+        return export_bills_to_excel(self.get_queryset())
