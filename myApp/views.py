@@ -83,7 +83,7 @@ class UserViewSet(viewsets.ModelViewSet):
         id_rol = request.query_params.get('id_rol', None)
         if id_rol:
             # Filtra y selecciona solo los campos 'id' y 'name'
-            users_by_rol = UserData.objects.filter(users_rol=id_rol).values('id', 'name')
+            users_by_rol = UserData.objects.filter(users_rol=id_rol).values('id', 'name','email')
             return Response(users_by_rol)  # Ya no es necesario usar el serializer, ya que solo devuelves campos seleccionados
         else:
             return Response({'error': 'id_rol no proporcionado'}, status=400)
