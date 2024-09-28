@@ -16,7 +16,8 @@ import os
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -69,7 +70,7 @@ ROOT_URLCONF = 'myApp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'template')],  # Cambia 'templates' por el nombre de la carpeta donde está mail.html
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,7 +136,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Para los archivos de medios (como imágenes subidas)
 MEDIA_URL = '/media/'
@@ -148,9 +150,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
+    'http://localhost:5174',
 
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 REST_FRAMEWORK = {
@@ -185,3 +188,13 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'myApp.UserData'
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Utiliza el backend SMTP para enviar correos
+EMAIL_HOST = 'smtp.gmail.com'  # Servidor SMTP (puede ser el de Gmail, Outlook, etc.)
+EMAIL_PORT = 587  # Puerto para enviar correos (587 para TLS, 465 para SSL)
+EMAIL_USE_TLS = True  # Habilita TLS (usar False si usas SSL)
+EMAIL_HOST_USER = 'elizaldiromero14@gmail.com'  # Tu dirección de correo electrónico
+EMAIL_HOST_PASSWORD = 'cvug ghiv grig nldl'
+DEFAULT_FROM_EMAIL = 'elizaldiromero14@gmail.com'  # Remitente por defecto

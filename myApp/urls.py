@@ -8,6 +8,8 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import DecryptView
+from .mails.send_mail import send_email_view
+from .mails.keys import get_id_user, update_password_by_key
 
 ########################################################################################
 # Configuración del Router
@@ -33,6 +35,9 @@ urlpatterns = [
     path('', include('schedules.urls')),
     path('', include('donations.urls')),
     path('', include('children.urls')),
+    path('send_mail/', send_email_view, name='send_mail'),  # Ruta para enviar correo
+    path('get_user/', get_id_user, name='get_user'),  # Ruta para generar key
+    path('update_password/<str:key>/', update_password_by_key, name='change_password'),  # Ruta para cambiar contraseña
 
     # Incluir las URLs del router al final
     path('', include(router.urls)),
