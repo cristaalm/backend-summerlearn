@@ -1,6 +1,0 @@
-1- git init
-2- git remote add origin https://github.com/cristaalm/BackEnd.git
-3- git branch -M main
-4- git add .
-5- git commit -m "First commit and up project"
-6- git git push -u origin main
