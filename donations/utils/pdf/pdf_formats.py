@@ -3,7 +3,7 @@
 from reportlab.lib import colors
 from reportlab.platypus import TableStyle
 
-def create_table_style(data, total_bills, total_donations, total_excess):
+def create_table_style(data):
     estilo_tabla = TableStyle([
         ('SPAN', (0,0), (3,0)),
         ('SPAN', (4,0), (6,0)),
@@ -23,6 +23,24 @@ def create_table_style(data, total_bills, total_donations, total_excess):
         ('FONTSIZE', (0,0), (-1,-1), 10),
         ('GRID', (0,0), (-1,-1), 1, colors.black),
     ])
+
+    # Estilos para alternar colores en las filas de datos
+    for i in range(2, len(data) - 1):  # Excluyendo las filas de encabezado y de totales
+        if i % 2 == 0:
+            # Color para filas pares
+            gasto_color = colors.HexColor('#d4ffe1')
+            donacion_color = colors.HexColor('#e0f7fa')
+            excedente_color = colors.HexColor('#fff9c4')
+        else:
+            # Color para filas impares
+            gasto_color = colors.HexColor('#fcffff')
+            donacion_color = colors.HexColor('#fcffff')
+            excedente_color = colors.HexColor('#fcffff')
+
+        # Aplicar color a cada sección de las filas
+        estilo_tabla.add('BACKGROUND', (0, i), (3, i), gasto_color)
+        estilo_tabla.add('BACKGROUND', (4, i), (6, i), donacion_color)
+        estilo_tabla.add('BACKGROUND', (7, i), (7, i), excedente_color)
 
     # Estilos para la fila de totales
     total_row = len(data) - 1

@@ -89,7 +89,7 @@ def export_bills_to_pdf():
 
     # Crear la tabla
     tabla = Table(data, repeatRows=2)
-    estilo_tabla = create_table_style(data, total_bills, total_donations, total_excess)
+    estilo_tabla = create_table_style(data)
     tabla.setStyle(estilo_tabla)
     elementos.append(tabla)
 
