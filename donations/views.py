@@ -1,4 +1,4 @@
-# myApp/views.py
+# donations/views.py
 
 from django.shortcuts import render
 from myApp.models import Donations, Bills
@@ -11,11 +11,12 @@ from rest_framework import status
 from rest_framework.decorators import action
 import datetime
 from django.utils.timezone import now
-from django.db.models import F, Q  # Asegúrate de incluir esta línea
-from django.http import HttpResponse
+from django.db.models import F, Q
 
 # Importar la función de exportación a Excel
 from .utils.excel.export_bills import export_bills_to_excel
+from .utils.pdf.export_pdf import export_bills_to_pdf
+# from .utils.pdf.export_pdf import export_bills_to_pdf
 
 ###########################################################################################
 class DonationsViews(viewsets.ModelViewSet):
@@ -80,6 +81,14 @@ class BillsViews(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    @action(detail=False, methods=['get'], url_path='exportar-excel')
+    #?############################## Generar reporte excel ####################################
+
+    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/api/bills/exportar-excel
     def exportar_bills_excel(self, request):
-        return export_bills_to_excel(self.get_queryset())
+        return export_bills_to_excel()
+    
+    #?############################## Generar reporte pdf ####################################
+    
+    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/api/bills/exportar-pdf
+    def exportar_bills_pdf(self, request):
+        return export_bills_to_pdf()
