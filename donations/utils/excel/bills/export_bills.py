@@ -1,4 +1,4 @@
-# donations/utils/utils/excel/export_bills.py
+# donations/utils/utils/excel/bills/export_bills.py
 
 import xlsxwriter
 from io import BytesIO
@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from .excel_formats import get_formats
 from .excel_headers import write_primary_headers, write_secondary_headers
 from .excel_data import write_bills_data
-from myApp.models import Bills
+from myApp.models import Bills, Donations
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,8 +48,12 @@ def export_bills_to_excel():
     for row_num, bill in enumerate(bills, start=2):
         bills_totals = write_bills_data(worksheet, row_num, bill, formats)
         total_bills += bills_totals[0]
-        total_donations += bills_totals[1]
-        total_excess += bills_totals[2]
+
+    # Calculamos por aparte el total de donaciones y el excedente
+    donations = Donations.objects.all()
+    for donation in donations:
+        total_donations += donation.donations_quantity
+        total_excess += (donation.donations_quantity - donation.donations_spent) if donation.donations_spent is not None else donation.donations_quantity
 
     # Escribir los totales
     total_rows = row_num + 1  # Asumiendo que al menos hay una fila de datos
@@ -77,8 +81,6 @@ def export_bills_to_excel():
     worksheet.set_column('G:G', 22)  # Cantidad de Donación
     worksheet.set_column('H:H', 22)  # Excedente disponible
 
-    # Opcional: Establecer una altura mínima para las filas
-    worksheet.set_default_row(20)  # Ajusta según tus necesidades
 
     workbook.close()
 

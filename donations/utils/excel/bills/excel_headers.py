@@ -1,4 +1,4 @@
-# donations/utils/utils/excel/excel_headers.py
+# donations/utils/utils/excel/bills/excel_headers.py
 
 def write_primary_headers(worksheet, header_primary_gasto, header_primary_donacion, header_primary_excedente):
     """

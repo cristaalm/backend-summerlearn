@@ -1,4 +1,4 @@
-# donations/utils/utils/excel/excel_formats.py
+# donations/utils/utils/excel/bills/excel_formats.py
 
 def get_formats(workbook):
     """
@@ -24,7 +24,7 @@ def get_formats(workbook):
         'bold': True,
         'font_color': 'black',
         'border': 1,
-        'align': 'left',
+        'align': 'center',
         'valign': 'vcenter',
         'text_wrap': True  # Habilita el ajuste de texto en encabezados secundarios
     }

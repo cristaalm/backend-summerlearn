@@ -1,4 +1,4 @@
-# donations/utils/utils/excel/excel_data.py
+# donations/utils/utils/excel/bills/excel_data.py
 
 import datetime
 
