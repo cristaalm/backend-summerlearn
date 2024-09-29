@@ -14,9 +14,10 @@ from django.utils.timezone import now
 from django.db.models import F, Q
 
 # Importar la función de exportación a Excel
-from .utils.excel.export_bills import export_bills_to_excel
-from .utils.pdf.export_pdf import export_bills_to_pdf
-# from .utils.pdf.export_pdf import export_bills_to_pdf
+from .utils.excel.bills.export_bills import export_bills_to_excel
+from .utils.pdf.bills.export_pdf import export_bills_to_pdf
+from .utils.excel.donations.export_donations import export_donations_to_excel
+from .utils.pdf.donations.export_pdf import export_donations_to_pdf
 
 ###########################################################################################
 class DonationsViews(viewsets.ModelViewSet):
@@ -30,6 +31,20 @@ class DonationsViews(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    #?############################## Generar reporte excel ####################################
+    
+    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/donations/exportar-excel
+    def exportar_donations_excel(self, request):
+        return export_donations_to_excel()
+    
+    #?############################## Generar reporte pdf ####################################
+
+    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/donations/exportar-pdf
+    def exportar_donations_pdf(self, request):
+        return export_donations_to_pdf()
+    
+    #?############################## Obtener donaciones por semana ############################
 
     @action(detail=False, methods=['get'], url_path='get-donations-by-week')
     def get_donations_by_week(self, request):
@@ -61,6 +76,8 @@ class DonationsViews(viewsets.ModelViewSet):
             "donations_by_day": donations_by_day,
             "total_donations": sum(donations_by_day)
         })
+    
+    #?############################## Obtener donaciones disponibles ############################
 
     @action(detail=False, methods=['get'], url_path='available-donations')
     def get_available_donations(self, request):
@@ -83,12 +100,12 @@ class BillsViews(viewsets.ModelViewSet):
 
     #?############################## Generar reporte excel ####################################
 
-    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/api/bills/exportar-excel
+    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/bills/exportar-excel
     def exportar_bills_excel(self, request):
         return export_bills_to_excel()
     
     #?############################## Generar reporte pdf ####################################
     
-    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/api/bills/exportar-pdf
+    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/bills/exportar-pdf
     def exportar_bills_pdf(self, request):
         return export_bills_to_pdf()
