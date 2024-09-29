@@ -1,9 +1,6 @@
-# myApp/excel_utils/excel_data.py
+# donations/utils/utils/excel/excel_data.py
 
 import datetime
-import logging
-
-logger = logging.getLogger(__name__)
 
 def write_bills_data(worksheet, row_num, bill, formats):
     """
@@ -25,7 +22,6 @@ def write_bills_data(worksheet, row_num, bill, formats):
         worksheet.write_number(row_num, 1, bill.bills_amount, formats['bill'][row_type]['money'])
         total_bills += bill.bills_amount
     else:
-        logger.warning(f'Bill ID {bill.bills_id} has no amount specified. Defaulting to 0.') 
         worksheet.write_number(row_num, 1, 0, formats['bill'][row_type]['money'])
 
     # Concepto
@@ -44,7 +40,6 @@ def write_bills_data(worksheet, row_num, bill, formats):
             date_obj = datetime.datetime.combine(date_obj, datetime.datetime.min.time())
             worksheet.write_datetime(row_num, 3, date_obj, formats['bill'][row_type]['date'])
         except (ValueError, TypeError):
-            logger.warning(f'Bill ID {bill.bills_id} has invalid date format: {bill.bills_date}. Writing as text.')
             worksheet.write(row_num, 3, bill.bills_date, formats['bill'][row_type]['text'])
 
     # Donación
@@ -66,7 +61,6 @@ def write_bills_data(worksheet, row_num, bill, formats):
                 donation_date = datetime.datetime.combine(donation_date, datetime.datetime.min.time())
                 worksheet.write_datetime(row_num, 5, donation_date, formats['donation'][row_type]['date'])
             except (ValueError, TypeError):
-                logger.warning(f'Donation linked to Bill ID {bill.bills_id} has invalid date format: {donations.donations_date}. Writing as text.')
                 worksheet.write(row_num, 5, donations.donations_date, formats['donation'][row_type]['text'])
 
         # Cantidad
@@ -74,7 +68,6 @@ def write_bills_data(worksheet, row_num, bill, formats):
             worksheet.write_number(row_num, 6, donations.donations_quantity, formats['donation'][row_type]['money'])
             total_donations += donations.donations_quantity
         else:
-            logger.warning(f'Donation linked to Bill ID {bill.bills_id} has no quantity specified. Defaulting to 0.')
             worksheet.write_number(row_num, 6, 0, formats['donation'][row_type]['money'])
 
         # Excedente disponible

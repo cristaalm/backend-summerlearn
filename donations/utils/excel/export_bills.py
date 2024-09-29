@@ -1,4 +1,4 @@
-# myApp/excel_utils/export_bills.py
+# donations/utils/utils/excel/export_bills.py
 
 import xlsxwriter
 from io import BytesIO
@@ -6,11 +6,12 @@ from django.http import HttpResponse
 from .excel_formats import get_formats
 from .excel_headers import write_primary_headers, write_secondary_headers
 from .excel_data import write_bills_data
+from myApp.models import Bills
 import logging
 
 logger = logging.getLogger(__name__)
 
-def export_bills_to_excel(bills_queryset):
+def export_bills_to_excel():
     """
     Genera un archivo Excel con los datos de Bills y retorna una respuesta HTTP.
     """
@@ -36,8 +37,15 @@ def export_bills_to_excel(bills_queryset):
     total_donations = 0
     total_excess = 0
 
+    # Obtener los datos
+    bills = Bills.objects.all().select_related(
+        'bills_donations',
+        'bills_user',
+        'bills_donations__donations_user'
+    )
+
     # Escribir los datos
-    for row_num, bill in enumerate(bills_queryset, start=2):
+    for row_num, bill in enumerate(bills, start=2):
         bills_totals = write_bills_data(worksheet, row_num, bill, formats)
         total_bills += bills_totals[0]
         total_donations += bills_totals[1]
