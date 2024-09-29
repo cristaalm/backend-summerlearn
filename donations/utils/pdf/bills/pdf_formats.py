@@ -1,4 +1,4 @@
-# donations/utils/pdf/pdf_formats.py
+# donations/utils/pdf/bills/pdf_formats.py
 
 from reportlab.lib import colors
 from reportlab.platypus import TableStyle
@@ -51,5 +51,8 @@ def create_table_style(data):
     estilo_tabla.add('TEXTCOLOR', (0, total_row), (3, total_row), colors.white)
     estilo_tabla.add('TEXTCOLOR', (4, total_row), (6, total_row), colors.white)
     estilo_tabla.add('TEXTCOLOR', (7, total_row), (7, total_row), colors.black)
+    
+    # Fusionar las celdas 4 y 5 de donaciones
+    estilo_tabla.add('SPAN', (4, total_row), (5, total_row))
 
     return estilo_tabla

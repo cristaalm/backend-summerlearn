@@ -1,4 +1,4 @@
-# donations/utils/pdf/imageAndTitle.py
+# donations/utils/pdf/bills/imageAndTitle.py
 
 from reportlab.platypus import Flowable
 from reportlab.lib import colors

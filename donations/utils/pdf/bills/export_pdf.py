@@ -1,11 +1,11 @@
-# donations/utils/pdf/export_pdf.py
+# donations/utils/pdf/bills/export_pdf.py
 
 from io import BytesIO
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
 from reportlab.platypus import SimpleDocTemplate, Table, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-from myApp.models import Bills
+from myApp.models import Bills, Donations
 import os
 from django.conf import settings
 from .imageAndTitle import ImageAndTitle
@@ -67,13 +67,17 @@ def export_bills_to_pdf():
 
             # Actualizar totales
             total_bills += bill.bills_amount if bill.bills_amount else 0
-            total_donations += donations.donations_quantity if donations.donations_quantity else 0
-            total_excess += excess
         else:
             row.extend(['', '', '$0.00', '$0.00'])
             total_bills += bill.bills_amount if bill.bills_amount else 0
 
         data.append(row)
+
+    # Calculamos por aparte el total de donaciones y el excedente
+    donations = Donations.objects.all()
+    for donation in donations:
+        total_donations += donation.donations_quantity
+        total_excess += (donation.donations_quantity - donation.donations_spent) if donation.donations_spent is not None else donation.donations_quantity
 
     # Filas de totales
     data.append([
@@ -82,10 +86,11 @@ def export_bills_to_pdf():
         '', 
         '', 
         'Total de donaciones', 
+        'Total de donaciones',
         f"${'{:,.2f}'.format(total_donations)}", 
-        '', 
         f"${'{:,.2f}'.format(total_excess)}"
     ])
+    
 
     # Crear la tabla
     tabla = Table(data, repeatRows=2)
