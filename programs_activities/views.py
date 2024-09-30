@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import action
 from myApp.models import Areas, Programs, Activities, Objectives
 from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer
+
+from .utils.excel.programs.export_programs import export_programs_to_excel
+from .utils.pdf.programs.export_programs import export_programs_to_pdf
 
 class AreasViewSet(viewsets.ModelViewSet):
     queryset = Areas.objects.all()
@@ -41,6 +45,15 @@ class ProgramsViewSet(viewsets.ModelViewSet):
             "message": "Program successfully created",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/programs/exportar-excel
+    def exportar_programs_excel(self, request):
+        return export_programs_to_excel()
+    
+    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/programs/exportar-pdf
+    def exportar_programs_pdf(self, request):
+        return export_programs_to_pdf()
+        
         
 class ActivitiesViewSet(viewsets.ModelViewSet):
     queryset = Activities.objects.all()
