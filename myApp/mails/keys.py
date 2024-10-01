@@ -40,7 +40,7 @@ def get_id_user(request):
                 return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
             
             # Crear una clave temporal y almacenar el id del usuario
-            key = create_temp_key(user.id, expiration_time=120)  # Clave válida por 120 segundos
+            key = create_temp_key(user.id, expiration_time=600)  # Clave válida por 120 segundos
             
             
             name = user.name  
