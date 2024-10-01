@@ -9,7 +9,7 @@ def write_programs_data(worksheet, row_num, program, formats):
     row_type = 'even' if row_num % 2 == 0 else 'odd'
 
     # Responsable del programa
-    responsable = program.programs_user.name if program.programs_user else ''
+    responsable = program.programs_user.name if program.programs_user.name else ''
     worksheet.write(row_num, 0, responsable, formats['program'][row_type]['text'])
 
     # Nombre del programa

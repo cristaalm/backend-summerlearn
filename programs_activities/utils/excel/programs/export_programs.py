@@ -14,7 +14,7 @@ def export_programs_to_excel():
     """
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-    worksheet = workbook.add_worksheet('Bills')
+    worksheet = workbook.add_worksheet('Programs')
 
     # Obtener todos los formatos necesarios
     formats_data = get_formats(workbook)
