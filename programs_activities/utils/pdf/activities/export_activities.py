@@ -17,14 +17,15 @@ def export_activities_to_pdf():
 
     # Configurar el documento
     page_width, page_height = landscape(A4)
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
+    # configurar formato vertical
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
     elementos = []
 
     # Cargar la imagen
     imagen_path = os.path.join(settings.MEDIA_ROOT, 'LogoPI.jpg')
 
     # Crear el título con el texto
-    titulo = "Reporte de programas"
+    titulo = "Reporte de acvitidades"
     titulo_con_imagen = ImageAndTitle(image=imagen_path, text=titulo, width=50, height=50, page_width=page_width)
     
     # Añadir el título con la imagen a los elementos
