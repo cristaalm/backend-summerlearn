@@ -18,7 +18,8 @@ def export_programs_to_pdf():
 
     # Configurar el documento
     page_width, page_height = landscape(A4)
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
+    # configurar formato vertical
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
     elementos = []
 
     # Cargar la imagen
