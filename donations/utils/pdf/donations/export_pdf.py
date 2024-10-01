@@ -18,7 +18,8 @@ def export_donations_to_pdf():
 
     # Configurar el documento
     page_width, page_height = landscape(A4)
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
+    # configurar formato vertical
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
     elementos = []
 
     # Cargar la imagen
@@ -89,6 +90,6 @@ def export_donations_to_pdf():
 
     # creamos la respuesta HTTP para regresar el PDF
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte_donaciones.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="donaciones.pdf"'
     response.write(pdf)
     return response
