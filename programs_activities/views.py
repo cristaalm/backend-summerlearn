@@ -7,8 +7,11 @@ from rest_framework.decorators import action
 from myApp.models import Areas, Programs, Activities, Objectives
 from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer
 
+# Import the function to export the data to Excel
 from .utils.excel.programs.export_programs import export_programs_to_excel
 from .utils.pdf.programs.export_programs import export_programs_to_pdf
+from .utils.excel.activities.export_activities import export_activities_to_excel
+from .utils.pdf.activities.export_activities import export_activities_to_pdf
 
 class AreasViewSet(viewsets.ModelViewSet):
     queryset = Areas.objects.all()
@@ -46,11 +49,13 @@ class ProgramsViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
     
-    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/programs/exportar-excel
+    #?######################## Exportar a Excel y PDF ########################
+    
+    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/programs/exportar-excel/
     def exportar_programs_excel(self, request):
         return export_programs_to_excel()
     
-    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/programs/exportar-pdf
+    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/programs/exportar-pdf/
     def exportar_programs_pdf(self, request):
         return export_programs_to_pdf()
         
@@ -86,6 +91,17 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
         return Response({
             "message": "Actividad eliminada exitosamente"
         }, status=status.HTTP_200_OK)
+    
+    #?######################## Exportar a Excel y PDF ########################
+
+    @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/activities/exportar-excel/
+    def exportar_activities_excel(self, request):
+        return export_activities_to_excel()
+    
+    @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/activities/exportar-pdf/
+    def exportar_activities_pdf(self, request):
+        return export_activities_to_pdf()
+    
 
 class ObjectivesViewSet(viewsets.ModelViewSet):
     queryset = Objectives.objects.all()
