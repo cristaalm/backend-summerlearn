@@ -33,7 +33,7 @@ def send_email_view(request):
 
             # Crear el mensaje
             subject = 'Asunto del correo'
-            from_email = 'elizaldiromero14@gmail.com'
+            from_email = 'summerlandnotification@gmail.com'
             to = [email]  
 
             email_message = EmailMultiAlternatives(subject, text_content, from_email, to)
