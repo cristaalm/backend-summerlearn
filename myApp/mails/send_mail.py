@@ -24,7 +24,7 @@ def send_email_view(request):
                 return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
 
             # Generar la clave temporal y el enlace de restablecimiento
-            key = create_temp_key(user.id, expiration_time=120)  
+            key = create_temp_key(user.id, expiration_time=600)  
             reset_link = f'http://localhost:5173/reset-password/{key}/'  
 
             # Renderizar el contenido del correo desde una plantilla
@@ -32,7 +32,7 @@ def send_email_view(request):
             text_content = 'Este es el contenido del correo en texto plano.'
 
             # Crear el mensaje
-            subject = 'Asunto del correo'
+            subject = 'Recuperación de contraseña'
             from_email = 'summerlandnotification@gmail.com'
             to = [email]  
 
