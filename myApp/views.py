@@ -58,14 +58,22 @@ class RegisterView(APIView):
         if serializer.is_valid():
             try:
                 user = serializer.save()
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }, status=status.HTTP_201_CREATED)
+
+                # En lugar de generar el token manualmente, usamos el serializer de MyTokenObtainPairSerializer
+                token_serializer = MyTokenObtainPairSerializer(data={
+                    'username': user.username,  # Usa el campo username del usuario
+                    'email': user.email,  # El email enviado en el request
+                    'password': request.data.get('password')  # El password enviado en el request
+                })
+
+                if token_serializer.is_valid():
+                    return Response(token_serializer.validated_data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(token_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
             except IntegrityError:
                 return Response({"error": "A user with this information already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
