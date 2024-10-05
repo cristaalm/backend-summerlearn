@@ -104,19 +104,29 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
     
 
 class ObjectivesViewSet(viewsets.ModelViewSet):
-    queryset = Objectives.objects.all()
-    serializer_class = ObjectivesSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-        
+    queryset = Objectives.objects.all()  # Consulta de todos los objetivos
+    serializer_class = ObjectivesSerializer  # Serializer para los objetivos
+    permission_classes = [permissions.IsAuthenticated]  # Requiere autenticación
+    authentication_classes = [JWTAuthentication]  # Usa JWT para la autenticación
+    
+    # Método para crear un objetivo
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-
         serializer.is_valid(raise_exception=True)
-
         self.perform_create(serializer)
 
         return Response({
             "message": "Objective successfully created",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
+
+    # Acción personalizada para obtener objetivos filtrados por 'id_activity'
+    @action(detail=False, methods=['get'], url_path='get-objectives')
+    def objectivesByActivity(self, request):
+        id_activity = request.query_params.get('id_activity', None)
+        if id_activity:
+            # Filtrar objetivos por id_activity y devolver solo los campos 'id' y 'description'
+            objectives_by_activity = Objectives.objects.filter(objectives_activity=id_activity).values('objectives_id', 'objectives_description')
+            return Response(objectives_by_activity)  # Retorna un JSON con los objetivos filtrados
+        else:
+            return Response({'error': 'id_activity no proporcionado'}, status=400)

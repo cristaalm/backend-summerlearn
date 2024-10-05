@@ -15,7 +15,7 @@ def send_email_view(request):
             email = data.get('email', None)
 
             if email is None:
-                return JsonResponse({'error': 'Email no proporcionado'}, status=400)
+                return JsonResponse({'error': 'Correeo electrónico no proporcionado.'}, status=400)
 
             # Buscar el usuario por correo electrónico
             try:
@@ -41,11 +41,11 @@ def send_email_view(request):
 
             # Enviar el correo
             email_message.send()
-            return JsonResponse({'message': 'Correo enviado exitosamente'})
+            return JsonResponse({'message': 'Correo enviado exitosamente.'})
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Datos inválidos. Se esperaba un JSON.'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)
