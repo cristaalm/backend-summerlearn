@@ -87,7 +87,40 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(users_by_rol)  # Ya no es necesario usar el serializer, ya que solo devuelves campos seleccionados
         else:
             return Response({'error': 'id_rol no proporcionado'}, status=400)
+        
+    # Custom action to filter users by id_status
+    @action(detail=False, methods=['get'], url_path='by-status')
+    def get_by_status(self, request):  # Método para filtrar por estatus
+        id_status = request.query_params.get('id_status', None)
+        if id_status:
+            # Filtra y selecciona solo los campos 'id', 'name', 'email', y el nombre del estado relacionado
+            users_by_status = UserData.objects.filter(users_status=id_status).values('id', 'users_photo','name', 'email', 'users_rol__rol_name','users_status__status_name')
+            return Response(users_by_status)  # No es necesario el serializer, ya que solo devuelves campos seleccionados
+        else:
+            return Response({'error': 'id_status no proporcionado'}, status=400)
 
+    # Custom action to filter and update user status by id_status
+    @action(detail=False, methods=['post'], url_path='update-status')
+    def update_status(self, request):
+        user_id = request.data.get('id', None)
+        new_status_id = request.data.get('id_status', None)
+        
+        if not user_id or not new_status_id:
+            return Response({'error': 'id y id_status son requeridos'}, status=400)
+        
+        try:
+            # Buscar el usuario por su ID
+            user = UserData.objects.get(id=user_id)
+            
+            # Actualizar el campo 'users_status' con el nuevo id_status
+            user.users_status_id = new_status_id
+            user.save()
+            
+            return Response({'success': 'El estatus del usuario ha sido actualizado exitosamente'})
+        except UserData.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
 ########################################################################################
 
 class StatusViewSet(viewsets.ModelViewSet):

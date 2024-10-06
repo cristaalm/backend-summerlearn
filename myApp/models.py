@@ -76,12 +76,21 @@ class Areas(models.Model):
     class Meta:
         managed = True
         db_table = 'areas'
-        
+
+class Grades(models.Model):
+    grades_id = models.BigAutoField(primary_key=True)
+    grades_description = models.CharField(max_length=255)
+
+    class Meta:
+        managed = True
+        db_table = 'grades'
+            
 class Programs(models.Model):
     programs_id = models.BigAutoField(primary_key=True)
     programs_name = models.CharField(max_length=255)
     programs_start = models.DateField()
     programs_end = models.DateField()
+    programs_grade = models.ForeignKey('Grades', models.DO_NOTHING, db_column='programs_grade')
     programs_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='programs_user')
     programs_status = models.ForeignKey('Status', models.DO_NOTHING, db_column='programs_status')
     programs_area = models.ForeignKey('Areas', models.DO_NOTHING, db_column='programs_area')
