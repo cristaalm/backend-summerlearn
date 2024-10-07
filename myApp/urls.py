@@ -35,6 +35,7 @@ urlpatterns = [
     path('', include('schedules.urls')),
     path('', include('donations.urls')),
     path('', include('children.urls')),
+    path('', include('subscriptions.urls')),
     path('send_mail/', send_email_view, name='send_mail'),  # Ruta para enviar correo
     path('get_user/', get_id_user, name='get_user'),  # Ruta para generar key
     path('update_password/<str:key>/', update_password_by_key, name='change_password'),  # Ruta para cambiar contraseña

@@ -7,6 +7,7 @@ import uuid
 
 ########################################################################################
 # Importaciones de Django REST Framework
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -87,48 +88,62 @@ class UserViewSet(viewsets.ModelViewSet):
     
     # Custom action to filter users by id_rol
     @action(detail=False, methods=['get'], url_path='by-id-rol')
-    def getByRol(self, request):
-        id_rol = request.query_params.get('id_rol', None)
-        if id_rol:
-            # Filtra y selecciona solo los campos 'id' y 'name'
-            users_by_rol = UserData.objects.filter(users_rol=id_rol).values('id', 'name','email')
-            return Response(users_by_rol)  # Ya no es necesario usar el serializer, ya que solo devuelves campos seleccionados
-        else:
-            return Response({'error': 'id_rol no proporcionado'}, status=400)
+    def get_by_rol(self, request):
+        id_rol = request.query_params.get('id_rol')
+        if not id_rol:
+            return Response({'error': 'id_rol is required'}, status=HTTP_400_BAD_REQUEST)
         
+        # Filter users by role ID and select only specific fields
+        users_by_rol = UserData.objects.filter(users_rol=id_rol).values('id', 'name', 'email')
+        return Response(users_by_rol)
+
     # Custom action to filter users by id_status
     @action(detail=False, methods=['get'], url_path='by-status')
-    def get_by_status(self, request):  # Método para filtrar por estatus
-        id_status = request.query_params.get('id_status', None)
-        if id_status:
-            # Filtra y selecciona solo los campos 'id', 'name', 'email', y el nombre del estado relacionado
-            users_by_status = UserData.objects.filter(users_status=id_status).values('id', 'users_photo','name', 'email', 'users_rol__rol_name','users_status__status_name')
-            return Response(users_by_status)  # No es necesario el serializer, ya que solo devuelves campos seleccionados
-        else:
-            return Response({'error': 'id_status no proporcionado'}, status=400)
+    def get_by_status(self, request):
+        id_status = request.query_params.get('id_status')
+        if not id_status:
+            return Response({'error': 'id_status is required'}, status=HTTP_400_BAD_REQUEST)
+        
+        # Filter users by status and exclude those with role 3
+        users_by_status = UserData.objects.filter(users_status=id_status).exclude(users_rol=3).values(
+            'id', 'users_photo', 'name', 'email', 'users_rol__rol_name', 'users_status__status_name'
+        )
+        return Response(users_by_status)
 
-    # Custom action to filter and update user status by id_status
+    # Custom action to filter users with status 1 and 2
+    @action(detail=False, methods=['get'], url_path='show-by-status')
+    def show_by_status(self, request):
+        # Filter users whose status is 1 or 2
+        users_by_status = UserData.objects.filter(users_status__in=[1, 2])
+        
+        # Use the serializer to return all fields for these users
+        serializer = self.get_serializer(users_by_status, many=True)
+        return Response(serializer.data)
+
+    # Custom action to update user status by id_status
     @action(detail=False, methods=['post'], url_path='update-status')
     def update_status(self, request):
-        user_id = request.data.get('id', None)
-        new_status_id = request.data.get('id_status', None)
+        user_id = request.data.get('id')
+        new_status_id = request.data.get('id_status')
         
         if not user_id or not new_status_id:
-            return Response({'error': 'id y id_status son requeridos'}, status=400)
+            return Response({'error': 'Both id and id_status are required'}, status=HTTP_400_BAD_REQUEST)
         
         try:
-            # Buscar el usuario por su ID
+            # Find the user by ID
             user = UserData.objects.get(id=user_id)
             
-            # Actualizar el campo 'users_status' con el nuevo id_status
+            # Update the user's status
             user.users_status_id = new_status_id
             user.save()
             
-            return Response({'success': 'El estatus del usuario ha sido actualizado exitosamente'})
+            # Return a success message along with the updated user data
+            serializer = self.get_serializer(user)
+            return Response({'success': 'User status updated successfully', 'user': serializer.data})
         except UserData.DoesNotExist:
-            return Response({'error': 'Usuario no encontrado'}, status=404)
+            return Response({'error': 'User not found'}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
 ########################################################################################
 
 class StatusViewSet(viewsets.ModelViewSet):

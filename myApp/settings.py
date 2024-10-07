@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'programs_activities',
     'performance_beneficiaries',
     'schedules',
-    'suscriptions',
+    'subscriptions',
     'logs',
 ]
 
