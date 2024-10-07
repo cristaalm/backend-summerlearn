@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from myApp.models import Areas, Programs, Activities, Objectives
+from myApp.models import Areas, Programs, Activities, Objectives, Grades
 
 
 class AreasSerializer(serializers.ModelSerializer):
@@ -31,6 +31,10 @@ class ProgramsSerializer(serializers.ModelSerializer):
         representation['programs_area'] = {
             'id': instance.programs_area.areas_id,
             'name': instance.programs_area.areas_name,
+        }
+        representation['programs_grade'] = {
+            'id': instance.programs_grade.grades_id,
+            'description    ': instance.programs_grade.grades_description,
         }
         return representation
     
@@ -66,3 +70,9 @@ class ObjectivesSerializer(serializers.ModelSerializer):
             'name': instance.objectives_activity.activities_name,
         }
         return representation
+    
+class GradesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Grades
+        fields = '__all__'
+        read_only_fields = ('grades_id',)

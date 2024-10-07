@@ -4,8 +4,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
-from myApp.models import Areas, Programs, Activities, Objectives
-from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer
+from myApp.models import Areas, Programs, Activities, Objectives, Grades
+from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer, GradesSerializer
 
 # Import the function to export the data to Excel
 from .utils.excel.programs.export_programs import export_programs_to_excel
@@ -130,3 +130,9 @@ class ObjectivesViewSet(viewsets.ModelViewSet):
             return Response(objectives_by_activity)  # Retorna un JSON con los objetivos filtrados
         else:
             return Response({'error': 'id_activity no proporcionado'}, status=400)
+        
+class GradesViewSet(viewsets.ModelViewSet):
+    queryset = Grades.objects.all()
+    serializer_class = GradesSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
