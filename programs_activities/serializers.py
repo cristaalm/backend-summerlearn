@@ -34,7 +34,7 @@ class ProgramsSerializer(serializers.ModelSerializer):
         }
         representation['programs_grade'] = {
             'id': instance.programs_grade.grades_id,
-            'description    ': instance.programs_grade.grades_description,
+            'description': instance.programs_grade.grades_description,
         }
         return representation
     
@@ -76,3 +76,11 @@ class GradesSerializer(serializers.ModelSerializer):
         model = Grades
         fields = '__all__'
         read_only_fields = ('grades_id',)
+
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['programs_grade'] = {
+    #         'id': instance.programs_grade.id,
+    #         'description': instance.programs_grade.grades_description,
+    #     }
+    #     return representation
