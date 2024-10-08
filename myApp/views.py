@@ -2,6 +2,7 @@ from .controllers.serializers import MyTokenObtainPairSerializer, RolSeralizer, 
 from myApp.models import Rol, Status, UserData
 from django.core.files.storage import default_storage
 from django.db import IntegrityError
+from myApp.settings import MEDIA_ROOT
 import os
 import uuid
 
@@ -23,7 +24,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-   
+
 class DecryptView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -144,6 +145,49 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'User not found'}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
+        
+    # Acción custom para actualizar la imagen del usuario
+    @action(detail=False, methods=['post'], url_path='update-photo')
+    def update_photo(self, request):
+        user_id = request.data.get('id')
+        users_photo = request.data.get('users_photo')
+        
+        if not user_id or not users_photo:
+            return Response({'error': 'Both id and users_photo are required'}, status=HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Find the user by ID
+            user = UserData.objects.get(id=user_id)
+            
+            # Generar un nombre único para la imagen
+            filename = f"{uuid.uuid4()}.jpg"
+            path = os.path.join('usersImages', filename)
+            
+            # Guardar la imagen en el directorio
+            default_storage.save(path, users_photo)
+            
+            # Eliminar la imagen anterior si existe
+            if user.users_photo:
+                # removemos /media/ de la ruta de la imagen
+                old_path = os.path.join(MEDIA_ROOT, user.users_photo.replace('media/', ''))
+                # eliminamos y comprobamos si se eliminó correctamente
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                    if os.path.exists(old_path):
+                        return Response({'error': 'Failed to delete old image'}, status=HTTP_400_BAD_REQUEST)
+                
+            
+            # Actualizar la ruta de la imagen en la base de datos
+            user.users_photo = f'media/usersImages/{filename}'
+            user.save()
+            
+            # Retornar un mensaje de éxito y la ruta de la imagen
+            return Response({'success': 'User photo updated successfully', 'photo': user.users_photo})
+        except UserData.DoesNotExist:
+            return Response({'error': 'User not found'}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
+        
 ########################################################################################
 
 class StatusViewSet(viewsets.ModelViewSet):
