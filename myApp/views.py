@@ -166,8 +166,8 @@ class UserViewSet(viewsets.ModelViewSet):
             # Guardar la imagen en el directorio
             default_storage.save(path, users_photo)
             
-            # Eliminar la imagen anterior si existe
-            if user.users_photo:
+            # Eliminar la imagen anterior si existe y no es la imagen por defecto
+            if user.users_photo and user.users_photo != 'media/usersImages/placeholderUser.jpg':
                 # removemos /media/ de la ruta de la imagen
                 old_path = os.path.join(MEDIA_ROOT, user.users_photo.replace('media/', ''))
                 # eliminamos y comprobamos si se eliminó correctamente
@@ -185,6 +185,35 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'success': 'User photo updated successfully', 'photo': user.users_photo})
         except UserData.DoesNotExist:
             return Response({'error': 'User not found'}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
+
+    # Custom action para actualizar la contraseña del usuario
+    @action(detail=False, methods=['post'], url_path='changePassword')
+    def change_password(self, request):
+        user_id = request.data.get('id')
+        new_password = request.data.get('newPassword')
+        current_password = request.data.get('currentPassword')
+
+        if not user_id or not new_password:
+            return Response({'error': 'Both id and password are required', 'spanishError': 'Por favor, llene todos los campos'}, status=HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Find the user by ID
+            user = UserData.objects.get(id=user_id)
+            
+            # Verificar la contraseña actual
+            if not user.check_password(current_password):
+                return Response({'error': 'Current password is incorrect', 'spanishError': 'La contraseña actual es incorrecta'}, status=HTTP_400_BAD_REQUEST)
+            0
+            # Actualizar la contraseña del usuario
+            user.set_password(new_password)
+            user.save()
+            
+            # Retornar un mensaje de éxito
+            return Response({'success': 'User password updated successfully', 'spanishSuccess': 'Contraseña actualizada correctamente'})
+        except UserData.DoesNotExist:
+            return Response({'error': 'User not found', 'spanishError': 'Usuario no encontrado'}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
         
