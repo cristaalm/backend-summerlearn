@@ -12,8 +12,8 @@ class PerformanceBeneficiariesSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['performance_beneficiaries_subscription'] = {
             'id': instance.performance_beneficiaries_subscription.subscriptions_children_id,
-            'name': instance.performance_beneficiaries_subscription.subscriptions_children_child.children_name,
-            'description': instance.performance_beneficiaries_subscription.subscriptions_children_activity.activities_name,
+            'child': instance.performance_beneficiaries_subscription.subscriptions_children_child.children_name,
+            'activity': instance.performance_beneficiaries_subscription.subscriptions_children_activity.activities_name,
         }
         return representation
 
