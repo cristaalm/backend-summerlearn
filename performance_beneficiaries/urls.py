@@ -5,5 +5,5 @@ from .views import PerformanceBeneficiariesViewSet
 
 # Configuración del Router
 router = DefaultRouter()
-router.register(r'performance-beneficiaries', PerformanceBeneficiariesViewSet, basename='erformance-beneficiaries')
+router.register(r'performance-beneficiaries', PerformanceBeneficiariesViewSet, basename='performance-beneficiaries')
 urlpatterns = router.urls
