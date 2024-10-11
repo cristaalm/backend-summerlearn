@@ -217,6 +217,25 @@ class UserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
         
+    # Custom action para obtener la imagen del usuario
+    @action(detail=False, methods=['get'], url_path='get-photo')
+    def get_photo(self, request):
+        user_id = request.query_params.get('id')
+        
+        if not user_id:
+            return Response({'error': 'id is required'}, status=HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Find the user by ID
+            user = UserData.objects.get(id=user_id)
+            
+            # Retornar la ruta de la imagen
+            return Response({'photo': user.users_photo})
+        except UserData.DoesNotExist:
+            return Response({'error': 'User not found'}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
+        
 ########################################################################################
 
 class StatusViewSet(viewsets.ModelViewSet):
