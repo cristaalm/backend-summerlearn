@@ -61,24 +61,12 @@ class DecryptSerializer(serializers.Serializer):
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
-     
         # Llamar al método `get_token` del padre para obtener el token
         token = super().get_token(user)
 
-        # Obtener el ID del usuario y buscar su registro en la base de datos
-        user_id = user.id
-        registro_usuario = UserData.objects.get(id=user_id)
-
-        # Encriptar el rol del usuario usando una passphrase
-        passphrase = 'cuatro_veinte'  # Asegúrate de que esta sea una passphrase segura
-        rol_encriptado = encrypt(str(registro_usuario.users_rol.rol_id), passphrase)
-        print("Texto Original: ", str(registro_usuario.users_rol.rol_id))
-        print("Encriptado: ", encrypt(rol_encriptado,passphrase))
-        print("Desencriptado: ",decrypt(rol_encriptado,passphrase))
-        
         # Añadir datos personalizados al token
         token['username'] = user.name
-        token['rol'] = rol_encriptado  # Añadir el rol encriptado
+        token['rol'] = user.users_rol.rol_id
 
         # print(token)
         return token
