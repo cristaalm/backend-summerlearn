@@ -222,3 +222,24 @@ class Activities(models.Model):
     class Meta:
         managed = True
         db_table = 'activities'
+
+class Chat(models.Model):
+    chat_id = models.BigAutoField(primary_key=True)
+    chat_date = models.DateField()
+    chat_user1 = models.ForeignKey('UserData', models.DO_NOTHING, db_column='chat_user1', related_name='chats_as_user1')
+    chat_user2 = models.ForeignKey('UserData', models.DO_NOTHING, db_column='chat_user2', related_name='chats_as_user2')
+
+    class Meta:
+        managed = True
+        db_table = 'chat'
+
+class Messages(models.Model):
+    messages_id = models.BigAutoField(primary_key=True)
+    messages_date = models.DateField()
+    messages_content = models.CharField(max_length=500)
+    messages_chat = models.ForeignKey('Chat', models.DO_NOTHING, db_column='messages_chat')
+    messages_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='messages_user')
+
+    class Meta:
+        managed = True
+        db_table = 'messages'
