@@ -1,3 +1,5 @@
+# path: myApp/settings.py
+
 """
 Django settings for myApp project.
 
@@ -35,6 +37,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +55,7 @@ INSTALLED_APPS = [
     'schedules',
     'subscriptions',
     'logs',
+    'chats',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +87,16 @@ TEMPLATES = [
     },
 ]
 
+# Configuración de Django Channels
+ASGI_APPLICATION = 'myApp.asgi.application'
 WSGI_APPLICATION = 'myApp.wsgi.application'
+
+# Configuración del canal layer (puedes usar Redis para mayor escalabilidad)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database
@@ -198,3 +211,17 @@ EMAIL_USE_TLS = True  # Habilita TLS (usar False si usas SSL)
 EMAIL_HOST_USER = 'summerlandnotification@gmail.com'  # Tu dirección de correo electrónico
 EMAIL_HOST_PASSWORD = 'hliw jxoh xzkn ixjp'
 DEFAULT_FROM_EMAIL = 'summerlandnotification@gmail.com'  # Remitente por defecto
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
