@@ -235,7 +235,7 @@ class Chat(models.Model):
 
 class Messages(models.Model):
     messages_id = models.BigAutoField(primary_key=True)
-    messages_date = models.DateField()
+    messages_date = models.DateTimeField()
     messages_content = models.CharField(max_length=500)
     messages_chat = models.ForeignKey('Chat', models.DO_NOTHING, db_column='messages_chat')
     messages_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='messages_user')
