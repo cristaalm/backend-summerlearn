@@ -4,8 +4,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
-from myApp.models import Areas, Programs, Activities, Objectives, Grades
-from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer, GradesSerializer
+from myApp.models import Areas, Programs, Activities, Objectives, Grades, SubscriptionsVolunteer
+from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer, GradesSerializer,ActivitiesSerializer
 
 # Import the function to export the data to Excel
 from .utils.excel.programs.export_programs import export_programs_to_excel
@@ -58,39 +58,78 @@ class ProgramsViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/programs/exportar-pdf/
     def exportar_programs_pdf(self, request):
         return export_programs_to_pdf()
-        
-        
+    
+
 class ActivitiesViewSet(viewsets.ModelViewSet):
     queryset = Activities.objects.all()
     serializer_class = ActivitiesSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    # Creación de una actividad
     def create(self, request, *args, **kwargs):
-        # Create a serializer instance with the provided data
+        # Crear el serializer con los datos proporcionados
         serializer = self.get_serializer(data=request.data)
-
-        # Validate the data
+        
+        # Validar los datos
         serializer.is_valid(raise_exception=True)
-
-        # Save the new 'Activities' instance
+        
+        # Guardar la nueva instancia de 'Activities'
         self.perform_create(serializer)
-
-        # Return a response with a success message and the created data
+        
+        # Retornar una respuesta con un mensaje de éxito y los datos creados
         return Response({
             "message": "Actividad creada exitosamente",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
 
-    # Override the destroy method to customize the response when deleting
+    # Personalización de la respuesta al eliminar una actividad
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         
-        # Return a confirmation message
+        # Retornar un mensaje de confirmación
         return Response({
             "message": "Actividad eliminada exitosamente"
         }, status=status.HTTP_200_OK)
+
+    # Endpoint personalizado para obtener actividades con el estado de suscripción del usuario
+    @action(detail=False, methods=['get'], url_path='activities-subscribed')
+    def activitiesSubscribed(self, request):
+        id_user = request.query_params.get('id_user', None)
+
+        if not id_user:
+            return Response({'error': 'id_user no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verificar si el usuario existe en la base de datos (opcional)
+        if not SubscriptionsVolunteer.objects.filter(subscriptions_volunteer_user=id_user).exists():
+            return Response({'error': 'Usuario no encontrado o no suscrito a ninguna actividad'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Obtener todas las actividades
+        actividades = Activities.objects.all()
+
+        # Obtener todas las suscripciones del usuario actual
+        subs = SubscriptionsVolunteer.objects.filter(
+            subscriptions_volunteer_user=id_user
+        ).values_list('subscriptions_volunteer_activity', flat=True)
+
+        # Crear una lista de actividades con el estado de suscripción
+        actividades_data = []
+        for actividad in actividades:
+            suscrito = actividad.activities_id in subs  # Verifica si está suscrito
+            actividades_data.append({
+                'activities_id': actividad.activities_id,
+                'activities_name': actividad.activities_name,
+                'activities_description': actividad.activities_description,
+                'activities_program': actividad.activities_program.programs_name,
+                'activities_program_area': actividad.activities_program.programs_area.areas_name, 
+                # 'activities_date': actividad.activities_date,
+                'activities_status': actividad.activities_status,
+                'suscrito': suscrito  # True si está suscrito, False si no lo está
+            })
+
+        # Retornar las actividades con el estado de suscripción en formato JSON
+        return Response(actividades_data, status=status.HTTP_200_OK)
     
     #?######################## Exportar a Excel y PDF ########################
 
