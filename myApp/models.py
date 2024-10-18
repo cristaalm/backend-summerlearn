@@ -226,18 +226,19 @@ class Activities(models.Model):
 class Chat(models.Model):
     chat_id = models.CharField(max_length=255, primary_key=True, unique=True)
     chat_date = models.DateField()
-    chat_user1 = models.ForeignKey('UserData', models.DO_NOTHING, db_column='chat_user1', related_name='chats_as_user1')
-    chat_user2 = models.ForeignKey('UserData', models.DO_NOTHING, db_column='chat_user2', related_name='chats_as_user2')
+    chat_user1 = models.ForeignKey('UserData', models.CASCADE, db_column='chat_user1', related_name='chats_as_user1')
+    chat_user2 = models.ForeignKey('UserData', models.CASCADE, db_column='chat_user2', related_name='chats_as_user2')
 
     class Meta:
         managed = True
         db_table = 'chat'
 
+
 class Messages(models.Model):
     messages_id = models.BigAutoField(primary_key=True)
     messages_date = models.DateTimeField()
     messages_content = models.CharField(max_length=500)
-    messages_chat = models.ForeignKey('Chat', models.DO_NOTHING, db_column='messages_chat')
+    messages_chat = models.ForeignKey('Chat', models.CASCADE, db_column='messages_chat')  # Reflejar cambios en cascada
     messages_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='messages_user')
 
     class Meta:
