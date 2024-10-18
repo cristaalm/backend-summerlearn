@@ -224,7 +224,7 @@ class Activities(models.Model):
         db_table = 'activities'
 
 class Chat(models.Model):
-    chat_id = models.BigAutoField(primary_key=True)
+    chat_id = models.CharField(max_length=255, primary_key=True, unique=True)
     chat_date = models.DateField()
     chat_user1 = models.ForeignKey('UserData', models.DO_NOTHING, db_column='chat_user1', related_name='chats_as_user1')
     chat_user2 = models.ForeignKey('UserData', models.DO_NOTHING, db_column='chat_user2', related_name='chats_as_user2')
