@@ -110,5 +110,5 @@ git config --global core.autocrlf input  # Convierte CRLF a LF en Linux/macOS.
 Para iniciar el servidor, usa el siguiente comando:
 
 ```sh
-daphne -b 0.0.0.0 -p 8000 myApp.asgi:application
+watchfiles "daphne myApp.asgi:application -b 0.0.0.0 -p 8000"
 ```
