@@ -7,6 +7,7 @@ import uuid
 import os
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
+from pytz import timezone
 from channels.layers import get_channel_layer
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from channels.db import database_sync_to_async
@@ -183,7 +184,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     def create_chat(self, chat_id, user1_id, user2_id):
         from myApp.models import UserData, Chat
-        return Chat.objects.create(chat_id=chat_id, chat_user1=UserData.objects.get(id=user1_id), chat_user2=UserData.objects.get(id=user2_id))
+        return Chat.objects.create(chat_id=chat_id, chat_date=datetime.now(timezone('America/Mexico_City')), chat_user1=UserData.objects.get(id=user1_id), chat_user2=UserData.objects.get(id=user2_id))
 
     def create_message(self, message_id, message, date, user_id, chat_id):
         from myApp.models import UserData, Chat, Messages
