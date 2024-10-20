@@ -4,27 +4,25 @@ import json
 from datetime import datetime
 import jwt
 import uuid
-import os
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from pytz import timezone
-from channels.layers import get_channel_layer
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
+from urllib.parse import parse_qs
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # Extraer token del header Authorization
+        # Extraer token del query string
         try:
-            headers = dict(self.scope['headers'])
-            auth_header = headers.get(b'authorization', None)
-
-            if auth_header is None or not auth_header.startswith(b'Bearer '):
+            query_string = self.scope['query_string'].decode('utf-8')
+            query_params = parse_qs(query_string)
+            
+            token = query_params.get('token', [None])[0]  # Extraer el token
+            
+            if token is None:
                 raise ValueError('No se encontró el token')
 
-            # Decodificar el token Bearer
-            token = auth_header.split(b' ')[1].decode('utf-8')
+            # Decodificar el token JWT
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             self.user_id = str(payload['user_id'])
 
@@ -70,8 +68,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_send_message(content)
             else:
                 await self.send(json.dumps({'type': 'critical_error', 'content': {'error': 'Usuario no autenticado'}}))
+        elif message_type == "ping":
+            await self.send(json.dumps({'type': 'pong'}))
+        elif message_type == "typing":
+            if hasattr(self, 'user_id'):
+                await self.handle_typing(content)
         else:
             await self.send(json.dumps({'type': 'critical_error', 'content': {'error': 'Tipo de mensaje desconocido'}}))
+
+    async def handle_typing(self, content):
+        try: 
+            recipient_id = content['recipient_id']
+            isTyping = content['isTyping']
+            chat_id = f'{min(int(self.user_id), int(recipient_id))}_{max(int(self.user_id), int(recipient_id))}'
+            recipient_group_name = f'user_{recipient_id}'
+        except KeyError:
+            await self.send(json.dumps({'type': 'critical_error', 'content': {'error': 'Datos incompletos'}}))
+            return
+
+        # Enviar mensaje al grupo del destinatario
+        await self.channel_layer.group_send(
+            recipient_group_name,
+            {
+                'type': 'typing',
+                'content': {'id': chat_id, 'isTyping': isTyping}
+            }
+        )
 
     async def handle_start(self):
         # Obtener el ID del usuario desde el token
@@ -80,29 +102,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Recuperar los chats del usuario de forma asíncrona
         chats = await sync_to_async(self.get_init_chats)(user_id)
 
-        # Enviar la información de cada chat uno por uno
-        for chat_data in chats:
-            await self.send(json.dumps({
-                'type': 'init_chats',
-                'content': chat_data
-            }))
-
+        # Enviar la información de los chats al cliente
         await self.send(json.dumps({
-                'type': 'end_chats'
-            }))
+            'type': 'init_chats',
+            'content': chats
+        }))
         
         messages = await sync_to_async(self.get_init_messages)(user_id, chats)
 
-        # Enviar la información de cada mensaje uno por uno
-        for message_data in messages:
-            await self.send(json.dumps({
-                'type': 'init_messages',
-                'content': message_data
-            }))
-
+        # Enviar la información de los mensajes al cliente
         await self.send(json.dumps({
-                'type': 'end_messages'
-            }))
+            'type': 'init_messages',
+            'content': messages
+        }))
 
 
     def get_init_messages(self, user_id, chats):
@@ -110,7 +122,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         messages_data_list = []
 
         for chat_data in chats:
-            chat_id = chat_data['chat_id']
+            chat_id = chat_data['id']
 
             # Obtener los mensajes del chat
             messages = Messages.objects.filter(messages_chat=chat_id).order_by('messages_date')
@@ -161,16 +173,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             # Crear el diccionario de datos del chat
             chat_data = {
-                'chat_id': chat.chat_id,
-                'chat_date': chat.chat_date.isoformat(),
-                'chat_user': {
+                'id': chat.chat_id,
+                'date': chat.chat_date.isoformat(),
+                'user': {
                     'id': chat_user.id,
                     'name': chat_user.name,
                     'email': chat_user.email,
-                    'users_photo': chat_user.users_photo,
-                    'rol_name': chat_user.users_rol.rol_name
+                    'userPhoto': chat_user.users_photo,
+                    'rol': chat_user.users_rol.rol_name
                 },
-                'last_message': last_message_data
+                'lastMessage': last_message_data
             }
 
             # Añadir a la lista
@@ -206,7 +218,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'users_photo': user_recipient.users_photo,
                 'rol_name': user_recipient.users_rol.rol_name
             },
-            'last_message': {
+            'lastMessage': {
                 'id': message_id,
                 'content': message,
                 'date': date
@@ -256,7 +268,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat_data = await sync_to_async(self.serialize_chat)(chat, recipient_id, message_id, message, date)
 
         # Enviar mensaje al grupo del destinatario y al emisor
-        content = {'message': message, 'date': date, 'message_id': message_id, 'sender_id': self.user_id, 'chat': chat_data}
+        content = {'id': message_id, 'message': message, 'date': date, 'user': self.user_id, 'chat': chat_data}
         await self.channel_layer.group_send(
             recipient_group_name,
             {
@@ -265,7 +277,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        content = {'message': message, 'date': date, 'message_id': message_id, 'sender_id': self.user_id}
+        # Enviar mensaje al grupo del emisor
+        content = {'id': message_id, 'message': message, 'date': date, 'user': self.user_id, 'chat': chat_data}
         await self.channel_layer.group_send(
             self.user_group_name,
             {
@@ -299,5 +312,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Enviar el mensaje al WebSocket
         await self.send(text_data=json.dumps({
             'type': 'message_sent',
+            'content': content
+        }))
+
+    async def typing(self, event):
+        content = event['content']
+
+        # Enviar el mensaje al WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'typing',
             'content': content
         }))
