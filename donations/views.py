@@ -26,6 +26,16 @@ class DonationsViews(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    def get_queryset(self):
+        # Obtener el ID del usuario de los parámetros de la URL
+        user_id = self.request.query_params.get('user_id', None)
+        queryset = Donations.objects.all()
+        print(user_id)
+        # Si el parámetro 'user_id' está presente, filtrar las donaciones
+        if user_id is not None:
+            queryset = queryset.filter(donations_user__id=user_id)
+        return queryset
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -97,6 +107,23 @@ class BillsViews(viewsets.ModelViewSet):
     serializer_class = BillsSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+
+    def get_queryset(self):
+        # Obtener el ID del usuario de los parámetros de la URL
+        user_id = self.request.query_params.get('user_id', None)
+        queryset = Bills.objects.all()
+        print(user_id)
+        # Si el parámetro 'user_id' está presente, filtrar las donaciones
+        if user_id is not None:
+            queryset = queryset.filter(bills_user__id=user_id)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     #?############################## Generar reporte excel ####################################
 
