@@ -228,7 +228,8 @@ class Chat(models.Model):
     chat_date = models.DateField()
     chat_user1 = models.ForeignKey('UserData', models.CASCADE, db_column='chat_user1', related_name='chats_as_user1')
     chat_user2 = models.ForeignKey('UserData', models.CASCADE, db_column='chat_user2', related_name='chats_as_user2')
-    chat_seen = models.BooleanField(default=False)  # Campo para identificar si el chat ha sido visto
+    chat_seen_user1 = models.BooleanField(default=False)
+    chat_seen_user2 = models.BooleanField(default=False)  
 
     class Meta:
         managed = True
