@@ -83,7 +83,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'content': {'error': 'Usuario no autenticado'}
                 }))
         elif message_type == "ping":
-            await self.send(json.dumps({'type': 'pong'}))
+            pass
         elif message_type == "typing":
             if hasattr(self, 'user_id'):
                 await handle_typing(self, content)
