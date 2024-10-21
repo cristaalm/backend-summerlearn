@@ -73,8 +73,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif message_type == "typing":
             if hasattr(self, 'user_id'):
                 await self.handle_typing(content)
+        elif message_type == "seen":
+            if hasattr(self, 'user_id'):
+                await self.handle_seen(content)
         else:
             await self.send(json.dumps({'type': 'critical_error', 'content': {'error': 'Tipo de mensaje desconocido'}}))
+
+    async def handle_seen(self, content):
+        try: 
+            recipient_id = content['recipient_id']
+            chat_id = f'{min(int(self.user_id), int(recipient_id))}_{max(int(self.user_id), int(recipient_id))}'
+            recipient_group_name = f'user_{recipient_id}'
+        except KeyError:
+            await self.send(json.dumps({'type': 'critical_error', 'content': {'error': 'Datos incompletos'}}))
+            return
+        
+        # Cambiar el estado de visto del chat
+        await sync_to_async(self.change_seen)(chat_id)
+
+    def change_seen(self, chat_id):
+        from myApp.models import Chat
+        chat = Chat.objects.get(chat_id=chat_id)
+        if chat.chat_user1.id == int(self.user_id): 
+            chat.chat_seen_user1 = True
+        else:
+            chat.chat_seen_user2 = True
+        chat.save()
 
     async def handle_typing(self, content):
         try: 
@@ -154,9 +178,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat_user = None
             if str(chat.chat_user1.id) == str(user_id):
                 chat_user = UserData.objects.get(id=str(chat.chat_user2.id))
-            
+                seen = chat.chat_seen_user1
+
             elif str(chat.chat_user2.id) == str(user_id):
                 chat_user = UserData.objects.get(id=str(chat.chat_user1.id))
+                seen = chat.chat_seen_user2
 
             if not chat_user:
                 continue
@@ -175,12 +201,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat_data = {
                 'id': chat.chat_id,
                 'date': chat.chat_date.isoformat(),
+                'seenChat': seen,
                 'user': {
                     'id': chat_user.id,
                     'name': chat_user.name,
                     'email': chat_user.email,
                     'userPhoto': chat_user.users_photo,
-                    'rol': chat_user.users_rol.rol_name
+                    'rol': chat_user.users_rol.rol_name,
                 },
                 'lastMessage': last_message_data
             }
@@ -196,7 +223,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     def create_chat(self, chat_id, user1_id, user2_id):
         from myApp.models import UserData, Chat
-        return Chat.objects.create(chat_id=chat_id, chat_date=datetime.now(timezone('America/Mexico_City')), chat_user1=UserData.objects.get(id=user1_id), chat_user2=UserData.objects.get(id=user2_id))
+        return Chat.objects.create(chat_id=chat_id, chat_date=datetime.now(timezone('America/Mexico_City')), chat_user1=UserData.objects.get(id=user1_id), chat_user2=UserData.objects.get(id=user2_id), chat_seen_user1=True, chat_seen_user2=False)
 
     def create_message(self, message_id, message, date, user_id, chat_id):
         from myApp.models import UserData, Chat, Messages
@@ -205,18 +232,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def serialize_chat(self, chat, recipient_id, message_id, message, date):
         user1 = chat.chat_user1
         user2 = chat.chat_user2
-        user_recipient = user1 if user1.id == recipient_id else user2
+        user = user1 if user1.id != recipient_id else user2
+        seen = chat.chat_seen_user1 if str(user1.id) == str(recipient_id) else chat.chat_seen_user2
 
         # Serializar chat
         chat_data = {
-            'chat_id': chat.chat_id,
-            'chat_date': chat.chat_date.isoformat(),
-            'chat_user': {
-                'id': user_recipient.id,
-                'name': user_recipient.name,
-                'email': user_recipient.email,
-                'users_photo': user_recipient.users_photo,
-                'rol_name': user_recipient.users_rol.rol_name
+            'id': chat.chat_id,
+            'date': chat.chat_date.isoformat(),
+            'seenChat': seen,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'userPhoto': user.users_photo,
+                'rol': user.users_rol.rol_name
             },
             'lastMessage': {
                 'id': message_id,
@@ -257,6 +286,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if not chat:  # ! Error al crear el chat ! #
                 await self.send(json.dumps({'type': 'critical_error', 'content': {'error': 'Error al crear el chat'}}))
                 return
+        else: # si el chat ya existe, modificamos seen del usuario que no envió el mensaje
+            chat_user1_id = await sync_to_async(lambda: chat.chat_user1.id)()
+            if str(chat_user1_id) == str(self.user_id):
+                chat.chat_seen_user2 = False
+                chat.chat_seen_user1 = True
+            else:
+                chat.chat_seen_user1 = False
+                chat.chat_seen_user2 = True
+            await sync_to_async(chat.save)()
+
 
         # Guardar el mensaje en la base de datos
         Message = await sync_to_async(self.create_message)(message_id, message, date, self.user_id, chat_id)
