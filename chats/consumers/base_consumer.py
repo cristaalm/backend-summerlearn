@@ -3,7 +3,7 @@ import jwt
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from asgiref.sync import sync_to_async
-from .message_handlers import handle_start, handle_send_message, handle_typing, handle_seen
+from .message_handlers import handle_start_chats, handle_init_messages, handle_start_contacts, handle_send_message, handle_typing, handle_seen
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -36,6 +36,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Decodificación del token de acceso
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             self.user_id = str(payload['user_id'])
+            self.user_rol = str(payload['rol'])
         except jwt.ExpiredSignatureError:
             # Token expirado, intenta refrescarlo
             if refresh_token:
@@ -72,8 +73,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.user_group_name, self.channel_name)
 
         # Lógica para manejar los mensajes según el tipo
-        if message_type == "start":
-            await handle_start(self)
+        if message_type == "start_chats":
+            await handle_start_chats(self)
+        elif message_type == "start_messages":
+            await handle_init_messages(self)
+        elif message_type == "start_contacts":
+            await handle_start_contacts(self)
         elif message_type == "send_message":
             if hasattr(self, 'user_id'):
                 await handle_send_message(self, content)
