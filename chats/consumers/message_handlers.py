@@ -180,9 +180,10 @@ async def handle_typing(self, content):
         return
 
     recipient_group_name = f'user_{recipient_id}'
+    chat_id = f'{min(int(self.user_id), int(recipient_id))}_{max(int(self.user_id), int(recipient_id))}'
     await self.channel_layer.group_send(recipient_group_name, {
         'type': 'typing',
-        'content': {'id': recipient_id, 'isTyping': isTyping}
+        'content': {'id': chat_id, 'isTyping': isTyping}
     })
 
 # ? ######################### Funcion para el estado de visto ######################### ? #
