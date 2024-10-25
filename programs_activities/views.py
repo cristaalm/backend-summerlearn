@@ -101,35 +101,37 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
         if not id_user:
             return Response({'error': 'id_user no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Verificar si el usuario existe en la base de datos (opcional)
-        if not SubscriptionsVolunteer.objects.filter(subscriptions_volunteer_user=id_user).exists():
-            return Response({'error': 'Usuario no encontrado o no suscrito a ninguna actividad'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Obtener todas las actividades
-        actividades = Activities.objects.all()
-
         # Obtener todas las suscripciones del usuario actual
         subs = SubscriptionsVolunteer.objects.filter(
             subscriptions_volunteer_user=id_user
-        ).values_list('subscriptions_volunteer_activity', flat=True)
+        )
+        subs_ids = subs.values_list('subscriptions_volunteer_activity', flat=True)
+
+        # Verificar si el usuario tiene exactamente 3 suscripciones
+        if subs.count() == 3:
+            # Filtrar solo las actividades a las que el usuario está suscrito
+            actividades = Activities.objects.filter(activities_id__in=subs_ids)
+        else:
+            # Obtener todas las actividades
+            actividades = Activities.objects.all()
 
         # Crear una lista de actividades con el estado de suscripción
         actividades_data = []
         for actividad in actividades:
-            suscrito = actividad.activities_id in subs  # Verifica si está suscrito
+            suscrito = actividad.activities_id in subs_ids  # Verifica si está suscrito
             actividades_data.append({
                 'activities_id': actividad.activities_id,
                 'activities_name': actividad.activities_name,
                 'activities_description': actividad.activities_description,
                 'activities_program': actividad.activities_program.programs_name,
-                'activities_program_area': actividad.activities_program.programs_area.areas_name, 
-                # 'activities_date': actividad.activities_date,
+                'activities_program_area': actividad.activities_program.programs_area.areas_name,
                 'activities_status': actividad.activities_status,
                 'suscrito': suscrito  # True si está suscrito, False si no lo está
             })
 
         # Retornar las actividades con el estado de suscripción en formato JSON
         return Response(actividades_data, status=status.HTTP_200_OK)
+
     
     #?######################## Exportar a Excel y PDF ########################
 

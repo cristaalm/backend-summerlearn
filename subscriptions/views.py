@@ -32,9 +32,27 @@ class SubscriptionsVolunteerSerializer(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        id_user = request.data.get('subscriptions_volunteer_user', None)
 
+        # Verificar si se proporcionó el ID del usuario
+        if not id_user:
+            return Response({'error': 'El campo subscriptions_volunteer_user es obligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Contar las suscripciones activas del usuario actual
+        active_subscriptions = SubscriptionsVolunteer.objects.filter(
+            subscriptions_volunteer_user=id_user
+        ).count()
+
+        # Verificar si el usuario ya tiene más de tres suscripciones
+        if active_subscriptions >= 3:
+            return Response({
+                "error": "No puedes suscribirte a más actividades, ya tienes tres suscripciones activas."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validar los datos
         serializer.is_valid(raise_exception=True)
 
+        # Crear la nueva suscripción
         self.perform_create(serializer)
 
         return Response({
