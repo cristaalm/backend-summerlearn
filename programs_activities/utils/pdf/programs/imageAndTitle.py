@@ -1,4 +1,4 @@
-# donations/utils/pdf/donations/imageAndTitle.py
+# donations/utils/pdf/bills/imageAndTitle.py
 
 from reportlab.platypus import Flowable
 from reportlab.lib import colors
@@ -15,7 +15,7 @@ class ImageAndTitle(Flowable):
     def draw(self):
         # Calcular la posición para centrar la imagen y el texto
         total_width = self.width + self.canv.stringWidth(self.text, 'Helvetica-Bold', 16) + 10  # Espacio entre imagen y texto
-        x_position = ((self.page_width - total_width) / 2) - 220  # Restar para centrar
+        x_position = ((self.page_width - total_width) / 2) - 90  # Restar 10 para centrar
 
         # Dibujar un fondo blanco detrás de la imagen (rectángulo blanco)
         self.canv.setFillColor(colors.white)
