@@ -183,7 +183,7 @@ class Days(models.Model):
 class DaysActivities(models.Model):
     days_activities_id = models.BigAutoField(primary_key=True)
     days_activities_days = models.ForeignKey('Days', models.DO_NOTHING, db_column='days_activities_days')
-    days_activities_schedules = models.ForeignKey('Schedules', models.DO_NOTHING, db_column='days_activities_day')
+    days_activities_schedules = models.ForeignKey('Schedules', models.DO_NOTHING, db_column='days_activities_schedules')
     days_activities_activity = models.ForeignKey('Activities', models.DO_NOTHING, db_column='days_activities_activity')
 
     class Meta:
