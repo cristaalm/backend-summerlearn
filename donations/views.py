@@ -30,7 +30,6 @@ class DonationsViews(viewsets.ModelViewSet):
         # Obtener el ID del usuario de los parámetros de la URL
         user_id = self.request.query_params.get('user_id', None)
         queryset = Donations.objects.all()
-        print(user_id)
         # Si el parámetro 'user_id' está presente, filtrar las donaciones
         if user_id is not None:
             queryset = queryset.filter(donations_user__id=user_id)
@@ -113,7 +112,6 @@ class BillsViews(viewsets.ModelViewSet):
         # Obtener el ID del usuario de los parámetros de la URL
         user_id = self.request.query_params.get('user_id', None)
         queryset = Bills.objects.all()
-        print(user_id)
         # Si el parámetro 'user_id' está presente, filtrar las donaciones
         if user_id is not None:
             queryset = queryset.filter(bills_user__id=user_id)
