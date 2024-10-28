@@ -2,6 +2,8 @@
 from datetime import datetime, timedelta
 from pytz import timezone
 
+# ? ######################### Funciones para la primera petición del front ######################### ? #
+
 def get_init_chats(user_id):
     from myApp.models import Chat, Messages, UserData
     user = UserData.objects.get(id=user_id)
@@ -39,6 +41,7 @@ def get_init_chats(user_id):
                 'email': chat_user.email,
                 'userPhoto': chat_user.users_photo,
                 'rol': chat_user.users_rol.rol_name,
+                'isOnline': chat_user.is_online
             },
             'lastMessage': last_message_data
         }
@@ -85,9 +88,6 @@ def get_init_contacts(user_id, rol):
         '5': [4]      # Beneficiario puede ver voluntarios
     }
 
-    # Obtén el usuario
-    user = UserData.objects.only('id').get(id=user_id)
-
     # Obtén los roles de contactos según el rol del usuario
     roles_to_fetch = rol_contacts_map.get(str(rol), [])
 
@@ -97,12 +97,6 @@ def get_init_contacts(user_id, rol):
 
     # Obtiene los contactos según los roles definidos
     contacts = UserData.objects.filter(users_rol__in=roles_to_fetch)
-
-    # Excluye los usuarios con los que ya se tiene un chat abierto
-    # open_chats = Chat.objects.filter(chat_user1=user) | Chat.objects.filter(chat_user2=user)
-    # chat_user_ids = open_chats.values_list('chat_user1__id', 'chat_user2__id')
-    # exclude_user_ids = {uid for chat in chat_user_ids for uid in chat if uid != user.id}
-    # contacts = contacts.exclude(id__in=exclude_user_ids)
 
     # Generar los datos de los contactos con chat falso
     contacts_data = [
@@ -115,7 +109,8 @@ def get_init_contacts(user_id, rol):
                 'name': contact.name,
                 'email': contact.email,
                 'userPhoto': contact.users_photo,
-                'rol': contact.users_rol.rol_name
+                'rol': contact.users_rol.rol_name,
+                'isOnline': contact.is_online
             },
             'lastMessage': None
         }
@@ -124,6 +119,8 @@ def get_init_contacts(user_id, rol):
 
     return contacts_data
 
+# ? ######################### Funcion para el estado del chat ######################### ? #
+
 def change_seen(chat_id):
     from myApp.models import Chat
     chat = Chat.objects.get(chat_id=chat_id)
@@ -131,6 +128,7 @@ def change_seen(chat_id):
     chat.chat_seen_user2 = True
     chat.save()
 
+# ? ######################### Funciones para el envío de mensajes ######################### ? #
 
 def get_chat(chat_id):
     from myApp.models import Chat
@@ -185,3 +183,11 @@ def serialize_chat(chat, recipient_id, message_id, message, date):
                 'date': date
             }
     }
+
+# ? ######################### Funcion para el estado de conexión ######################### ? #
+
+def change_status(user_id, status):
+    from myApp.models import UserData
+    user = UserData.objects.get(id=user_id)
+    user.is_online = status
+    user.save()

@@ -3,18 +3,31 @@ import jwt
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from asgiref.sync import sync_to_async
-from .message_handlers import handle_start_chats, handle_init_messages, handle_start_contacts, handle_send_message, handle_typing, handle_seen
-
+from .message_handlers import handle_start_chats, handle_init_messages, handle_start_contacts, handle_send_message, handle_typing, handle_seen, handle_is_online
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
+        
+        # Añadir al usuario al grupo general
+        await self.channel_layer.group_add("general", self.channel_name)
 
     async def disconnect(self, close_code):
+        # Enviar mensaje de desconexión al grupo general si el usuario está autenticado
+        if hasattr(self, 'user_id'):
+            await self.channel_layer.group_send(
+                "general",
+                {
+                    'type': 'status',
+                    'content': {'id': self.user_id, 'status': False}
+                }
+            )
+            await handle_is_online(self, {'status': False})
+        
+        # Remover del grupo del usuario y del grupo general
         if hasattr(self, 'user_group_name'):
             await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
-
-class ChatConsumer(AsyncWebsocketConsumer):
+        await self.channel_layer.group_discard("general", self.channel_name)
 
     async def receive(self, text_data):
         try:
@@ -74,7 +87,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Lógica para manejar los mensajes según el tipo
         if message_type == "start_chats":
+            # Enviar mensaje al grupo general de que el usuario se ha conectado
+            await self.channel_layer.group_send(
+                "general",
+                {
+                    'type': 'status',
+                    'content': {'id': self.user_id, 'status': True}
+                }
+            )
             await handle_start_chats(self)
+            await handle_is_online(self, {'status': True})
         elif message_type == "start_messages":
             await handle_init_messages(self)
         elif message_type == "start_contacts":
@@ -137,5 +159,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content = event['content']
         await self.send(text_data=json.dumps({
             'type': 'typing',
+            'content': content
+        }))
+
+    async def status(self, event):
+        content = event['content']
+        await self.send(text_data=json.dumps({
+            'type': 'status',
             'content': content
         }))

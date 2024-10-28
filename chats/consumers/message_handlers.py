@@ -2,7 +2,7 @@ import uuid
 import json
 from datetime import datetime, timedelta
 from asgiref.sync import sync_to_async
-from .utils import get_init_chats, get_init_messages, change_seen, get_chat, create_chat, create_message, serialize_chat, get_init_contacts
+from .utils import get_init_chats, get_init_messages, change_seen, get_chat, create_chat, create_message, serialize_chat, get_init_contacts, change_status
 
 
 # ? ######################### Funciones para la primera petición del front ######################### ? #
@@ -216,3 +216,42 @@ async def handle_seen(self, content):
         return
 
     await sync_to_async(change_seen)(chat_id)
+
+# ? ######################### Funcion para el estado de conexión ######################### ? #
+
+async def handle_is_online(self, content):
+    """
+    <h3>Maneja el estado de conexión de un usuario.</h3>
+
+    <b>Atributos:</b>
+    <ul>
+        <li>content (dict): El contenido del estado de conexión, incluyendo 'status'.</li>
+        <ul>
+            <li><b>content.status</b> (bool): Indica si el usuario está en línea.</li>
+        </ul>
+    </ul>
+
+    <b>Retorna:</b>
+    <ul>
+        <li>Envía una respuesta JSON indicando el estado de conexión.</li>
+    </ul>
+    """
+
+    try:
+        status = content['status']
+    except KeyError:
+        await self.send(json.dumps({
+            'type': 'critical_error', 
+            'content': {'error': 'Datos incompletos'}
+        }))
+        return
+    
+    # comprobamos que el estado sea un booleano
+    if not isinstance(status, bool):
+        await self.send(json.dumps({
+            'type': 'critical_error', 
+            'content': {'error': 'El estado debe ser un booleano'}
+        }))
+        return
+    
+    await sync_to_async(change_status)(self.user_id, status)
