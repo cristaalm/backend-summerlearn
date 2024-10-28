@@ -254,6 +254,8 @@ class RolViewSet(viewsets.ReadOnlyModelViewSet):
     
 ########################################################################################
 
+
+
 # Custom APIVIEW para el API Root
 
 class CustomAPIRootView(APIView):
