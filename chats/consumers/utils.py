@@ -99,10 +99,10 @@ def get_init_contacts(user_id, rol):
     contacts = UserData.objects.filter(users_rol__in=roles_to_fetch)
 
     # Excluye los usuarios con los que ya se tiene un chat abierto
-    open_chats = Chat.objects.filter(chat_user1=user) | Chat.objects.filter(chat_user2=user)
-    chat_user_ids = open_chats.values_list('chat_user1__id', 'chat_user2__id')
-    exclude_user_ids = {uid for chat in chat_user_ids for uid in chat if uid != user.id}
-    contacts = contacts.exclude(id__in=exclude_user_ids)
+    # open_chats = Chat.objects.filter(chat_user1=user) | Chat.objects.filter(chat_user2=user)
+    # chat_user_ids = open_chats.values_list('chat_user1__id', 'chat_user2__id')
+    # exclude_user_ids = {uid for chat in chat_user_ids for uid in chat if uid != user.id}
+    # contacts = contacts.exclude(id__in=exclude_user_ids)
 
     # Generar los datos de los contactos con chat falso
     contacts_data = [
