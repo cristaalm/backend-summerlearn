@@ -6,7 +6,7 @@ from myApp.settings import MEDIA_ROOT
 import os
 import uuid
 
-########################################################################################
+# ? ######################################################################################## ? #
 # Importaciones de Django REST Framework
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from rest_framework.response import Response
@@ -20,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.reverse import reverse 
 from rest_framework_simplejwt.views import TokenObtainPairView
-########################################################################################
+# ? ######################################################################################## ? #
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -79,7 +79,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-########################################################################################
+# ? ######################################################################################## ? #
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = UserData.objects.all()
@@ -236,7 +236,59 @@ class UserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=HTTP_400_BAD_REQUEST)
         
-########################################################################################
+    # Custom action to filter users by id_rol and id_status
+    @action(detail=False, methods=['get'], url_path='by-rol-status')
+    def get_by_rol_status(self, request):
+        '''
+        Filtra los usuarios por rol y estado, y cuenta cuántos usuarios hay en cada categoría.
+
+        Returns:
+            Response: Un diccionario con los resultados de la consulta.
+        '''
+        # Obtenemos todos los roles y estados
+        roles = Rol.objects.all()
+        status_activo = Status.objects.get(status_id=1)
+        status_pendiente = Status.objects.get(status_id=3)
+        
+        # Inicializamos el diccionario de resultados
+        result = {
+            "Administrador": 0,
+            "Coordinador": 0,
+            "Donante": 0,
+            "Voluntario": 0,
+            "Beneficiario": 0,
+            "Inactivo": 0,
+            "Total": 0,
+            "pendientes": False
+        }
+
+        # Contamos los usuarios activos por rol
+        for rol in roles:
+            rol_count = UserData.objects.filter(users_rol=rol.rol_id, users_status=status_activo.status_id).count()
+            if rol.rol_id == 1:
+                result["Administrador"] += rol_count
+            elif rol.rol_id == 2:
+                result["Coordinador"] += rol_count
+            elif rol.rol_id == 3:
+                result["Donante"] += rol_count
+            elif rol.rol_id == 4:
+                result["Voluntario"] += rol_count
+            elif rol.rol_id == 5:
+                result["Beneficiario"] += rol_count
+            result["Total"] += rol_count
+        
+        # Contamos todos los usuarios inactivos (usuarios con cualquier estado que no sea activo)
+        inactivo_count = UserData.objects.exclude(users_status=status_activo.status_id).count()
+        pendiente_count = UserData.objects.filter(users_status=status_pendiente.status_id).count()
+        result["Inactivo"] += inactivo_count
+        result["Total"] += inactivo_count
+
+        if pendiente_count > 0:
+            result["pendientes"] = True
+        
+        return Response(result)
+        
+# ? ######################################################################################## ? #
 
 class StatusViewSet(viewsets.ModelViewSet):
     queryset = Status.objects.all()
@@ -244,7 +296,7 @@ class StatusViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-########################################################################################
+# ? ######################################################################################## ? #
 
 class RolViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Rol.objects.all()
@@ -252,7 +304,7 @@ class RolViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
-########################################################################################
+# ? ######################################################################################## ? #
 
 
 

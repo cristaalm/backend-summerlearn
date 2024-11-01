@@ -49,6 +49,16 @@ class ProgramsViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
     
+    # custom action to get four last programs
+    @action(detail=False, methods=['get'], url_path='last-programs')
+    def last_programs(self, request):
+        # Get the last 4 programs
+        last_programs = Programs.objects.all().order_by('-programs_id')[:6]
+        # Serialize the data
+        serializer = ProgramsSerializer(last_programs, many=True)
+        # Return the data
+        return Response(serializer.data)
+    
     #?######################## Exportar a Excel y PDF ########################
     
     @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/programs/exportar-excel/

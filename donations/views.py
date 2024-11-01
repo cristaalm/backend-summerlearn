@@ -98,6 +98,20 @@ class DonationsViews(viewsets.ModelViewSet):
         # Serializar las donaciones filtradas
         serializer = DonationSerializer(available_donations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    #?############################## Obtener ultimas 5 donaciones ############################
+
+    @action(detail=False, methods=['get'], url_path='last-donations')
+    def get_last_donations(self, request):
+        # Obtener las últimas 5 donaciones
+        last_donations = Donations.objects.all().order_by('-donations_date')[:5]
+        serializer = DonationSerializer(last_donations, many=True)
+        # Agregamos un campo adicional al JSON de respuesta, con el total de las ultimas 5 donaciones
+        total_donations = sum([donation['donations_quantity'] for donation in serializer.data])
+        return Response({
+            "last_donations": serializer.data,
+            "total_donations": total_donations
+        })
 
 
 ###########################################################################################
@@ -134,3 +148,17 @@ class BillsViews(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='exportar-pdf') # http://localhost:8000/bills/exportar-pdf
     def exportar_bills_pdf(self, request):
         return export_bills_to_pdf()
+    
+    #?############################## Obtener los ultimos 5 gastos ############################
+
+    @action(detail=False, methods=['get'], url_path='last-bills')
+    def get_last_bills(self, request):
+        # Obtener los últimos 5 gastos
+        last_bills = Bills.objects.all().order_by('-bills_date')[:5]
+        serializer = BillsSerializer(last_bills, many=True)
+        # Agregamos un campo adicional al JSON de respuesta, con el total de los ultimos 5 gastos
+        total_bills = sum([bill['bills_amount'] for bill in serializer.data])
+        return Response({
+            "last_bills": serializer.data,
+            "total_bills": total_bills
+        })
