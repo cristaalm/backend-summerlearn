@@ -103,8 +103,8 @@ class DonationsViews(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='last-donations')
     def get_last_donations(self, request):
-        # Obtener las últimas 5 donaciones
-        last_donations = Donations.objects.all().order_by('-donations_date')[:5]
+        # Obtener las últimas 5 donaciones ordenadas por ID en orden descendente
+        last_donations = Donations.objects.all().order_by('-donations_id')[:5]
         serializer = DonationSerializer(last_donations, many=True)
         # Agregamos un campo adicional al JSON de respuesta, con el total de las ultimas 5 donaciones
         total_donations = sum([donation['donations_quantity'] for donation in serializer.data])
@@ -153,8 +153,8 @@ class BillsViews(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='last-bills')
     def get_last_bills(self, request):
-        # Obtener los últimos 5 gastos
-        last_bills = Bills.objects.all().order_by('-bills_date')[:5]
+        # Obtener los últimos 5 gastos ordenados por ID en orden descendente
+        last_bills = Bills.objects.all().order_by('-bills_id')[:5]
         serializer = BillsSerializer(last_bills, many=True)
         # Agregamos un campo adicional al JSON de respuesta, con el total de los ultimos 5 gastos
         total_bills = sum([bill['bills_amount'] for bill in serializer.data])
