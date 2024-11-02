@@ -26,7 +26,7 @@ class BillsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['bills_donations'] = {
-            'id': instance.bills_donations.donations_user.id,
-            'name': instance.bills_donations.donations_user.name,
+            'id': instance.bills_user.id,
+            'name': instance.bills_user.name,
         }
         return representation
