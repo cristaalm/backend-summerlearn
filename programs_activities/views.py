@@ -49,7 +49,7 @@ class ProgramsViewSet(viewsets.ModelViewSet):
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
     
-    # custom action to get four last programs
+    # custom action to get six last programs
     @action(detail=False, methods=['get'], url_path='last-programs')
     def last_programs(self, request):
         # Get the last 4 programs
@@ -59,6 +59,33 @@ class ProgramsViewSet(viewsets.ModelViewSet):
         # Return the data
         return Response(serializer.data)
     
+    # custom action, que regresa los ultimos 5 programas asignados a un usuario por el programs_user
+    @action(detail=False, methods=['get'], url_path='programs-assigned') 
+    def programsAssigned(self, request):
+        id_user = request.query_params.get('id_user', None)
+        if not id_user:
+            return Response({'error': 'id_user no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
+        # Obtener todos los programas asignados al usuario
+        programs_assigned = Programs.objects.filter(programs_user=id_user).order_by('-programs_id')[:5]
+        # Serialize the data
+        serializer = ProgramsSerializer(programs_assigned, many=True)
+        # Return the data
+        return Response(serializer.data)
+    
+    # custom action, que regresa los ultimos 5 programas no asignados a un usuario por el programs_user
+    @action(detail=False, methods=['get'], url_path='programs-unassigned')
+    def programsNotAssigned(self, request):
+        id_user = request.query_params.get('id_user', None)
+        if not id_user:
+            return Response({'error': 'id_user no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
+        # Obtener todos los programas no asignados al usuario
+        programs_not_assigned = Programs.objects.exclude(programs_user=id_user).order_by('-programs_id')[:5]
+        # Serialize the data
+        serializer = ProgramsSerializer(programs_not_assigned, many=True)
+        # Return the data
+        return Response(serializer.data)
+        
+
     #?######################## Exportar a Excel y PDF ########################
     
     @action(detail=False, methods=['get'], url_path='exportar-excel') # http://localhost:8000/programs/exportar-excel/
@@ -102,6 +129,15 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
         return Response({
             "message": "Actividad eliminada exitosamente"
         }, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='last-activities')
+    def last_activities(self, request):
+        # Get the last 4 programs
+        last_activities = Activities.objects.all().order_by('-activities_id')[:5]
+        # Serialize the data
+        serializer = ActivitiesSerializer(last_activities, many=True)
+        # Return the data
+        return Response(serializer.data)
 
     # Endpoint personalizado para obtener actividades con el estado de suscripción del usuario
     @action(detail=False, methods=['get'], url_path='activities-subscribed')
