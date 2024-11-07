@@ -145,7 +145,7 @@ class Children(models.Model):
     children_name = models.CharField(max_length=255)
     children_photo = models.CharField(blank=True, null=True, max_length=255)
     children_birthdate = models.DateField()
-    children_curp = models.CharField(blank=True, null=True, max_length=255)
+    children_curp = models.CharField(blank=True, null=True, max_length=255, unique=True)
     children_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='children_user')
 
     class Meta:
