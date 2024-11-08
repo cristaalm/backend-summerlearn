@@ -4,7 +4,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import action
-from myApp.models import Areas, Programs, Activities, Objectives, Grades, SubscriptionsVolunteer
+from django.db.models import OuterRef, Subquery, Count, IntegerField
+from myApp.models import Areas, Programs, Activities, Objectives, Grades, SubscriptionsVolunteer,SubscriptionsChildren
 from .serializers import AreasSerializer, ProgramsSerializer, ActivitiesSerializer, ObjectivesSerializer, GradesSerializer,ActivitiesSerializer
 
 # Import the function to export the data to Excel
@@ -96,13 +97,38 @@ class ProgramsViewSet(viewsets.ModelViewSet):
     def exportar_programs_pdf(self, request):
         return export_programs_to_pdf()
     
-
 class ActivitiesViewSet(viewsets.ModelViewSet):
     queryset = Activities.objects.all()
     serializer_class = ActivitiesSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    def list(self, request, *args, **kwargs):
+        # Subconsultas para obtener los conteos de hijos y voluntarios
+        children_count = SubscriptionsChildren.objects.filter(
+            subscriptions_children_activity_id=OuterRef('pk')
+        ).values('subscriptions_children_activity_id').annotate(count=Count('*')).values('count')
+
+        volunteer_count = SubscriptionsVolunteer.objects.filter(
+            subscriptions_volunteer_activity_id=OuterRef('pk')
+        ).values('subscriptions_volunteer_activity_id').annotate(count=Count('*')).values('count')
+
+        # Anotación de las subconsultas
+        actividades = Activities.objects.annotate(
+            num_son=Subquery(children_count, output_field=IntegerField()),
+            num_volun=Subquery(volunteer_count, output_field=IntegerField())
+        )
+
+        # Serializar los datos de las actividades
+        serializer = self.get_serializer(actividades, many=True)
+        actividades_data = serializer.data
+
+        # Añadir los valores de `num_son` y `num_volun` a la respuesta
+        for i, actividad in enumerate(actividades):
+            actividades_data[i]['num_son'] = actividad.num_son or 0
+            actividades_data[i]['num_volun'] = actividad.num_volun or 0
+
+        return Response(actividades_data, status=status.HTTP_200_OK)
     # Creación de una actividad
     def create(self, request, *args, **kwargs):
         # Crear el serializer con los datos proporcionados
