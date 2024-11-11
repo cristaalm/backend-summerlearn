@@ -159,8 +159,11 @@ class UserViewSet(viewsets.ModelViewSet):
             # Find the user by ID
             user = UserData.objects.get(id=user_id)
             
+            # extraemos la extensión de la imagen
+            ext = users_photo.name.split('.')[-1]
+
             # Generar un nombre único para la imagen
-            filename = f"{uuid.uuid4()}.jpg"
+            filename = f'{uuid.uuid4()}.{ext}'
             path = os.path.join('usersImages', filename)
             
             # Guardar la imagen en el directorio

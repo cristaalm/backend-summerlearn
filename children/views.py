@@ -29,8 +29,15 @@ class ChildrensViewSet(viewsets.ModelViewSet):
         # obtenemos la imagen del request
         children_photo = request.data.get('children_photo', None)
 
+        if children_photo is None:
+            return Response({
+                "message": "Children photo is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # extraemos la extensión de la imagen
+        ext = children_photo.name.split('.')[-1]
         # Creamos un nombre de archivo único
-        filename = f"{uuid.uuid4()}.jpg"
+        filename = f'{uuid.uuid4()}.{ext}'
         # Juntamos el path con el nombre del archivo
         path = os.path.join('childrenImages', filename)
         # Guardamos la imagen en el directorio
