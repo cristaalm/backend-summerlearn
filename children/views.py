@@ -1,5 +1,6 @@
 from django.db import IntegrityError
 from django.core.files.storage import default_storage
+from myApp.settings import MEDIA_ROOT
 import os
 import uuid
 
@@ -54,3 +55,63 @@ class ChildrensViewSet(viewsets.ModelViewSet):
             "message": "Children successfully created",
             "data": serializer.data
         }, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        children_photo = request.data.get('children_photo', None)
+
+        # Crear un diccionario mutable a partir de request.data
+        data = request.data.copy()
+
+        # Si se proporciona una nueva foto, la actualizamos
+        if children_photo:
+            # Elimina la foto anterior si existe
+            if instance.children_photo:
+                old_photo_path = instance.children_photo.replace('media/', '')
+                old_photo_path = os.path.join(MEDIA_ROOT, old_photo_path)
+                if os.path.exists(old_photo_path):
+                    os.remove(old_photo_path)
+                    if os.path.exists(old_photo_path):
+                        return Response({'error': 'Failed to update image'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Genera un nuevo nombre de archivo para la foto
+            ext = children_photo.name.split('.')[-1]
+            filename = f'{uuid.uuid4()}.{ext}'
+            # Guarda la nueva foto en el directorio
+            path = os.path.join('childrenImages', filename)
+            default_storage.save(path, children_photo)
+            # Actualiza el campo con la nueva ruta de la foto
+            data['children_photo'] = f'media/childrenImages/{filename}'
+        else:
+            # Mantén la foto anterior si no se envía una nueva
+            data['children_photo'] = instance.children_photo
+
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response({
+            "message": "Children successfully updated",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Elimina la foto de perfil si existe
+        if instance.children_photo:
+            # Construir la ruta completa del archivo a partir de la ruta almacenada
+            photo_path = os.path.join(MEDIA_ROOT, instance.children_photo.replace('media/', ''))
+
+            # Elimina el archivo si existe
+            if os.path.exists(photo_path):
+                os.remove(photo_path)
+                if os.path.exists(photo_path):
+                    return Response({'error': 'Failed to delete old image'}, status=HTTP_400_BAD_REQUEST)
+
+        # Realiza la eliminación del objeto
+        self.perform_destroy(instance)
+
+        return Response({
+            "message": "Children successfully deleted"
+        }, status=status.HTTP_204_NO_CONTENT)
