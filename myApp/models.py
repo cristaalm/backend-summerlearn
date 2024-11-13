@@ -155,7 +155,7 @@ class Children(models.Model):
 class PerformanceBeneficiaries(models.Model):
     performance_beneficiaries_id = models.BigAutoField(primary_key=True)
     performance_beneficiaries_subscription = models.ForeignKey('SubscriptionsChildren', models.DO_NOTHING, db_column='performance_beneficiaries_subscription',null=True)
-    performance_beneficiaries_value = models.FloatField()
+    performance_beneficiaries_value = models.FloatField(null=True)
 
     class Meta:
         managed = True

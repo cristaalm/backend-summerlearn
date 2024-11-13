@@ -6,7 +6,7 @@ import uuid
 
 ############################################
 
-from myApp.models import Children
+from myApp.models import Children, PerformanceBeneficiaries
 ############################################
 
 from rest_framework import status
@@ -14,10 +14,11 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .serializers import ChildrensSerializer
+from .serializers import ChildrensSerializer, PerformanceBeneficiariesSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from rest_framework.decorators import action
 
 class ChildrensViewSet(viewsets.ModelViewSet):
     queryset = Children.objects.all()
@@ -115,3 +116,32 @@ class ChildrensViewSet(viewsets.ModelViewSet):
         return Response({
             "message": "Children successfully deleted"
         }, status=status.HTTP_204_NO_CONTENT)
+
+
+class PerformanceBeneficiariesViewSet(viewsets.ModelViewSet):
+    queryset = PerformanceBeneficiaries.objects.all()
+    serializer_class = PerformanceBeneficiariesSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+
+    @action(detail=False, methods=['post'], url_path='save-scores')
+    def save_scores(self, request):
+        scores = request.data.get('scores', [])
+        
+        for score_data in scores:
+            performance_id = score_data.get('id')
+            grade = score_data.get('grade')
+            
+            try:
+                # Cambiar 'id' por 'performance_beneficiaries_id'
+                performance = PerformanceBeneficiaries.objects.get(performance_beneficiaries_id=performance_id)
+                performance.performance_beneficiaries_value = grade  # Asegúrate de que 'performance_beneficiaries_value' es el campo correcto
+                performance.save()
+            except PerformanceBeneficiaries.DoesNotExist:
+                return Response(
+                    {"error": f"Performance with ID {performance_id} not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        return Response({"message": "Scores saved successfully"}, status=status.HTTP_200_OK)
+    
