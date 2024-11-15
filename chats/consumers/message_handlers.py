@@ -93,6 +93,9 @@ async def handle_send_message(self, content):
         }))
         return
 
+    if date.endswith('Z'):
+        date = date[:-1] + '+00:00'
+        
     try:
         datetime.fromisoformat(date)
     except ValueError:
@@ -100,6 +103,7 @@ async def handle_send_message(self, content):
             'type': 'critical_error', 
             'content': {'error': 'Formato de fecha inválido'}
         }))
+        # mostramos el error en la consola
         return
 
     recipient_group_name = f'user_{recipient_id}'
