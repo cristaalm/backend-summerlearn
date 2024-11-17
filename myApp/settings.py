@@ -15,6 +15,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,13 +27,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c9f^zx_w0a(*a=)*2xf4uv+$aur*wx9=)+up=1w&t#7_&!rw$-'
+# SECRET_KEY = 'django-insecure-c9f^zx_w0a(*a=)*2xf4uv+$aur*wx9=)+up=1w&t#7_&!rw$-'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-c9f^zx_w0a(*a=)*2xf4uv+$aur*wx9=)+up=1w&t#7_&!rw$-')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = []
 
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 
@@ -60,6 +66,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -102,15 +109,17 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# postgresql://USER:PASSWORD@HOST:PORT/NAME
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'summerlearn',
-        'USER': 'summerlearn',
-        'PASSWORD': 'vJ8CwfmDGiMdm75rmfuSQgiq5f4Zu55S',
-        'HOST': 'dpg-crouo9lsvqrc739lmj9g-a.oregon-postgres.render.com',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(default='postgresql://summerlearn:vJ8CwfmDGiMdm75rmfuSQgiq5f4Zu55S@dpg-crouo9lsvqrc739lmj9g-a.oregon-postgres.render.com:5432/summerlearn')
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'summerlearn',
+    #     'USER': 'summerlearn',
+    #     'PASSWORD': 'vJ8CwfmDGiMdm75rmfuSQgiq5f4Zu55S',
+    #     'HOST': 'dpg-crouo9lsvqrc739lmj9g-a.oregon-postgres.render.com',
+    #     'PORT': '5432',
+    # }
 }
 
 # DB LOCAL
@@ -157,12 +166,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/media/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Para los archivos de medios (como imágenes subidas)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'media')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

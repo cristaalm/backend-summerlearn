@@ -22,7 +22,7 @@ def export_activities_to_pdf():
     elementos = []
 
     # Cargar la imagen
-    imagen_path = os.path.join(settings.MEDIA_ROOT, 'LogoPI.jpg')
+    imagen_path = os.path.join(settings.STATIC_ROOT, 'LogoPI.jpg')
 
     # Crear el título con el texto
     titulo = "Reporte de acvitidades"

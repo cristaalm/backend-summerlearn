@@ -2,7 +2,7 @@ from .controllers.serializers import MyTokenObtainPairSerializer, RolSeralizer, 
 from myApp.models import Rol, Status, UserData
 from django.core.files.storage import default_storage
 from django.db import IntegrityError
-from myApp.settings import MEDIA_ROOT
+from myApp.settings import STATIC_ROOT
 import os
 import uuid
 
@@ -172,7 +172,7 @@ class UserViewSet(viewsets.ModelViewSet):
             # Eliminar la imagen anterior si existe y no es la imagen por defecto
             if user.users_photo and user.users_photo != 'media/usersImages/placeholderUser.jpg':
                 # removemos /media/ de la ruta de la imagen
-                old_path = os.path.join(MEDIA_ROOT, user.users_photo.replace('media/', ''))
+                old_path = os.path.join(STATIC_ROOT, user.users_photo.replace('media/', ''))
                 # eliminamos y comprobamos si se eliminó correctamente
                 if os.path.exists(old_path):
                     os.remove(old_path)

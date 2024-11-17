@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.core.files.storage import default_storage
-from myApp.settings import MEDIA_ROOT
+from myApp.settings import STATIC_ROOT
 import os
 import uuid
 
@@ -69,7 +69,7 @@ class ChildrensViewSet(viewsets.ModelViewSet):
             # Elimina la foto anterior si existe
             if instance.children_photo:
                 old_photo_path = instance.children_photo.replace('media/', '')
-                old_photo_path = os.path.join(MEDIA_ROOT, old_photo_path)
+                old_photo_path = os.path.join(STATIC_ROOT, old_photo_path)
                 if os.path.exists(old_photo_path):
                     os.remove(old_photo_path)
                     if os.path.exists(old_photo_path):
@@ -102,7 +102,7 @@ class ChildrensViewSet(viewsets.ModelViewSet):
         # Elimina la foto de perfil si existe
         if instance.children_photo:
             # Construir la ruta completa del archivo a partir de la ruta almacenada
-            photo_path = os.path.join(MEDIA_ROOT, instance.children_photo.replace('media/', ''))
+            photo_path = os.path.join(STATIC_ROOT, instance.children_photo.replace('media/', ''))
 
             # Elimina el archivo si existe
             if os.path.exists(photo_path):
