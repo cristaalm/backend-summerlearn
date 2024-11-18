@@ -29,9 +29,6 @@ class ChildrensViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Obtener el ID del usuario de los parámetros de la URL
         user_id = self.request.user.id
-        print("\n" * 5)
-        print(user_id)
-        print("\n" * 5)
         queryset = Children.objects.all()
         # Si el parámetro 'user_id' está presente, filtrar las donaciones
         if user_id is not None:
