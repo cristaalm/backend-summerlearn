@@ -65,6 +65,7 @@ class RegisterView(APIView):
                 token_serializer = MyTokenObtainPairSerializer(data={
                     'username': user.username,  # Usa el campo username del usuario
                     'email': user.email,  # El email enviado en el request
+                    'status': user.users_status.status_id,  # El status del usuario
                     'password': request.data.get('password')  # El password enviado en el request
                 })
 

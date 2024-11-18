@@ -67,6 +67,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Añadir datos personalizados al token
         token['username'] = user.name
         token['rol'] = user.users_rol.rol_id
+        token['status'] = user.users_status.status_id
 
         return token
 
