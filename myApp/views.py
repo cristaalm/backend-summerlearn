@@ -6,6 +6,9 @@ from myApp.settings import MEDIA_ROOT
 import os
 import uuid
 
+# Importar las funciones de envío de correos desde el archivo send_mail.py
+from myApp.mails.send_mail import send_mail_accepted, send_mail_rejected
+
 # ? ######################################################################################## ? #
 # Importaciones de Django REST Framework
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -20,6 +23,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.reverse import reverse 
 from rest_framework_simplejwt.views import TokenObtainPairView
+# ? ######################################################################################## ? #
+
 # ? ######################################################################################## ? #
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -116,7 +121,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='show-by-status')
     def show_by_status(self, request):
         # Filter users whose status is 1 or 2
-        users_by_status = UserData.objects.filter(users_status__in=[1, 2])
+        users_by_status = UserData.objects.filter(users_status__in=[1, 2, 4])
         
         # Use the serializer to return all fields for these users
         serializer = self.get_serializer(users_by_status, many=True)
@@ -134,6 +139,22 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             # Find the user by ID
             user = UserData.objects.get(id=user_id)
+
+            # verificamos si el anterior estado es igual a 3 (pendiente)
+            if user.users_status.status_id == 3:
+
+                data = {
+                    'email': user.email,
+                    'name': user.name
+                }
+
+                # si el nuevo estado es 1 (activo), enviamos un correo de aceptación
+                if new_status_id == 1:
+                    send_mail_accepted(data)
+                # si el nuevo estado es 2 (rechazado), enviamos un correo de rechazo
+                elif new_status_id == 4:
+                    send_mail_rejected(data)
+                
             
             # Update the user's status
             user.users_status_id = new_status_id
