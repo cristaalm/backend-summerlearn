@@ -140,8 +140,8 @@ class UserViewSet(viewsets.ModelViewSet):
             # Find the user by ID
             user = UserData.objects.get(id=user_id)
 
-            # verificamos si el anterior estado es igual a 3 (pendiente)
-            if user.users_status.status_id == 3:
+            # verificamos si el anterior estado es igual a 3 (pendiente) o 4 (rechazado)
+            if user.users_status.status_id == 3 or user.users_status.status_id == 4:
 
                 data = {
                     'email': user.email,
@@ -149,7 +149,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 }
 
                 # si el nuevo estado es 1 (activo), enviamos un correo de aceptación
-                if new_status_id == 1:
+                if new_status_id == 1: 
                     send_mail_accepted(data)
                 # si el nuevo estado es 2 (rechazado), enviamos un correo de rechazo
                 elif new_status_id == 4:
