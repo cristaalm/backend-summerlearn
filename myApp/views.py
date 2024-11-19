@@ -19,7 +19,6 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny  
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.reverse import reverse 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -29,6 +28,16 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = UserData.objects.get(email=request.data['email'])
+            if user.users_status.status_id == 1:
+                return super().post(request, *args, **kwargs)
+            else:
+                return Response({'error': 'User is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DecryptView(APIView):
     permission_classes = [permissions.IsAuthenticated]
