@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from myApp.models import UserData
 from .keys import create_temp_key
+from myApp.settings import EMAIL_HOST_USER
 
 @csrf_exempt  # Desactivar CSRF solo para pruebas, no recomendado en producción
 def send_email_view(request):
@@ -33,7 +34,7 @@ def send_email_view(request):
 
             # Crear el mensaje
             subject = 'Recuperación de contraseña'
-            from_email = 'summerlandnotification@gmail.com'
+            from_email = EMAIL_HOST_USER
             to = [email]  
 
             email_message = EmailMultiAlternatives(subject, text_content, from_email, to)
@@ -49,3 +50,61 @@ def send_email_view(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+@csrf_exempt
+def send_mail_accepted(data):
+    try:
+        # Convertir el cuerpo de la solicitud de JSON a un diccionario
+        email = data.get('email', None)
+        name = data.get('name', None)
+
+        if email is None or name is None:
+            return JsonResponse({'error': 'Faltan datos en la solicitud.'}, status=400)
+
+        # Renderizar el contenido del correo desde una plantilla
+        html_content = render_to_string('mail_accepted.html', {'nombre': name})
+        text_content = 'Este es el contenido del correo en texto plano.'
+
+        # Crear el mensaje
+        subject = 'Estado de solicitud'
+        from_email = EMAIL_HOST_USER
+        to = [email]  
+
+        email_message = EmailMultiAlternatives(subject, text_content, from_email, to)
+        email_message.attach_alternative(html_content, "text/html")
+
+        # Enviar el correo
+        email_message.send()
+        return JsonResponse({'message': 'Correo enviado exitosamente.'})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+def send_mail_rejected(data):
+    try:
+        # Convertir el cuerpo de la solicitud de JSON a un diccionario
+        email = data.get('email', None)
+        name = data.get('name', None)
+
+        if email is None or name is None:
+            return JsonResponse({'error': 'Faltan datos en la solicitud.'}, status=400)
+
+        # Renderizar el contenido del correo desde una plantilla
+        html_content = render_to_string('mail_rejected.html', {'nombre': name})
+        text_content = 'Este es el contenido del correo en texto plano.'
+
+        # Crear el mensaje
+        subject = 'Estado de solicitud'
+        from_email = EMAIL_HOST_USER
+        to = [email]  
+
+        email_message = EmailMultiAlternatives(subject, text_content, from_email, to)
+        email_message.attach_alternative(html_content, "text/html")
+
+        # Enviar el correo
+        email_message.send()
+        return JsonResponse({'message': 'Correo enviado exitosamente.'})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

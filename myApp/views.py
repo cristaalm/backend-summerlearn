@@ -6,6 +6,9 @@ from myApp.settings import STATIC_ROOT
 import os
 import uuid
 
+# Importar las funciones de envío de correos desde el archivo send_mail.py
+from myApp.mails.send_mail import send_mail_accepted, send_mail_rejected
+
 # ? ######################################################################################## ? #
 # Importaciones de Django REST Framework
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -16,14 +19,25 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny  
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
 from rest_framework.reverse import reverse 
 from rest_framework_simplejwt.views import TokenObtainPairView
 # ? ######################################################################################## ? #
 
+# ? ######################################################################################## ? #
+
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = UserData.objects.get(email=request.data['email'])
+            if user.users_status.status_id == 1:
+                return super().post(request, *args, **kwargs)
+            else:
+                return Response({'error': 'User is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DecryptView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -65,6 +79,7 @@ class RegisterView(APIView):
                 token_serializer = MyTokenObtainPairSerializer(data={
                     'username': user.username,  # Usa el campo username del usuario
                     'email': user.email,  # El email enviado en el request
+                    'status': user.users_status.status_id,  # El status del usuario
                     'password': request.data.get('password')  # El password enviado en el request
                 })
 
@@ -115,7 +130,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='show-by-status')
     def show_by_status(self, request):
         # Filter users whose status is 1 or 2
-        users_by_status = UserData.objects.filter(users_status__in=[1, 2])
+        users_by_status = UserData.objects.filter(users_status__in=[1, 2, 4])
         
         # Use the serializer to return all fields for these users
         serializer = self.get_serializer(users_by_status, many=True)
@@ -133,6 +148,22 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             # Find the user by ID
             user = UserData.objects.get(id=user_id)
+
+            # verificamos si el anterior estado es igual a 3 (pendiente) o 4 (rechazado)
+            if user.users_status.status_id == 3 or user.users_status.status_id == 4:
+
+                data = {
+                    'email': user.email,
+                    'name': user.name
+                }
+
+                # si el nuevo estado es 1 (activo), enviamos un correo de aceptación
+                if new_status_id == 1: 
+                    send_mail_accepted(data)
+                # si el nuevo estado es 2 (rechazado), enviamos un correo de rechazo
+                elif new_status_id == 4:
+                    send_mail_rejected(data)
+                
             
             # Update the user's status
             user.users_status_id = new_status_id

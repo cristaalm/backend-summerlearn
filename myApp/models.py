@@ -147,6 +147,8 @@ class Children(models.Model):
     children_birthdate = models.DateField()
     children_curp = models.CharField(blank=True, null=True, max_length=255, unique=True)
     children_user = models.ForeignKey('UserData', models.DO_NOTHING, db_column='children_user')
+    children_grade = models.ForeignKey('Grades', models.DO_NOTHING, db_column='children_grade')
+
 
     class Meta:
         managed = True

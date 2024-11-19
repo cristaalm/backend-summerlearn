@@ -26,6 +26,15 @@ class ChildrensViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    def get_queryset(self):
+        # Obtener el ID del usuario de los parámetros de la URL
+        user_id = self.request.user.id
+        queryset = Children.objects.all()
+        # Si el parámetro 'user_id' está presente, filtrar las donaciones
+        if user_id is not None:
+            queryset = queryset.filter(children_user__id=user_id)
+        return queryset
+
     def create(self, request, *args, **kwargs):
 
         # obtenemos la imagen del request

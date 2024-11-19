@@ -14,8 +14,12 @@ class ChildrensSerializer(serializers.ModelSerializer):
             'id': instance.children_user.id,
             'name': instance.children_user.name,
         }
+
+        representation['children_grade'] = {
+            'id': instance.children_grade.grades_id,
+            'description': instance.children_grade.grades_description,
+        }
         return representation
-    
  
 
 class PerformanceBeneficiariesSerializer(serializers.ModelSerializer):
