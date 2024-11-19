@@ -95,8 +95,8 @@ def get_init_contacts(user_id, rol):
     if not roles_to_fetch:
         return []
 
-    # Obtiene los contactos según los roles definidos
-    contacts = UserData.objects.filter(users_rol__in=roles_to_fetch)
+    # Obtiene los contactos según los roles definidos, excluyendo el usuario actual
+    contacts = UserData.objects.filter(users_rol__in=roles_to_fetch).exclude(id=user_id)
 
     # Generar los datos de los contactos con chat falso
     contacts_data = [
