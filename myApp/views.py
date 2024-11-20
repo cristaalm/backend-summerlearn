@@ -121,7 +121,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'id_status is required'}, status=HTTP_400_BAD_REQUEST)
         
         # Filter users by status and exclude those with role 3
-        users_by_status = UserData.objects.filter(users_status=id_status).exclude(users_rol=3).values(
+        users_by_status = UserData.objects.filter(users_status=id_status).values(
             'id', 'users_photo', 'name', 'email', 'users_rol__rol_name', 'users_status__status_name'
         )
         return Response(users_by_status)
