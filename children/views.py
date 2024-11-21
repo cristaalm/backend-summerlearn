@@ -3,10 +3,11 @@ from django.core.files.storage import default_storage
 from myApp.settings import STATIC_ROOT
 import os
 import uuid
+import datetime
 
 ############################################
 
-from myApp.models import Children, PerformanceBeneficiaries
+from myApp.models import Children, PerformanceBeneficiaries, Programs, Activities, SubscriptionsChildren, PerformanceBeneficiaries
 ############################################
 
 from rest_framework import status
@@ -19,6 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from rest_framework.decorators import action
+from programs_activities.serializers import ProgramsSerializer
 
 class ChildrensViewSet(viewsets.ModelViewSet):
     queryset = Children.objects.all()
@@ -36,35 +38,77 @@ class ChildrensViewSet(viewsets.ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-
-        # obtenemos la imagen del request
+        # Obtenemos la imagen del request
         children_photo = request.data.get('children_photo', None)
 
         if children_photo is None:
-            return Response({
-                "message": "Children photo is required"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Children photo is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # extraemos la extensión de la imagen
-        ext = children_photo.name.split('.')[-1]
-        # Creamos un nombre de archivo único
-        filename = f'{uuid.uuid4()}.{ext}'
-        # Juntamos el path con el nombre del archivo
-        path = os.path.join('childrenImages', filename)
-        # Guardamos la imagen en el directorio
-        default_storage.save(path, children_photo)
-        # Reemplazamos el campo children_photo con la ruta de la imagen
-        request.data['children_photo'] = f'media/childrenImages/{filename}'
+        # Guardamos la imagen en un directorio único
+        try:
+            ext = children_photo.name.split('.')[-1]
+            filename = f'{uuid.uuid4()}.{ext}'
+            path = os.path.join('childrenImages', filename)
+            default_storage.save(path, children_photo)
+            request.data['children_photo'] = f'media/childrenImages/{filename}'
+        except Exception as e:
+            return Response({"message": f"Error saving image: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        # Serializamos y validamos los datos
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         self.perform_create(serializer)
 
-        return Response({
-            "message": "Children successfully created",
-            "data": serializer.data
-        }, status=status.HTTP_201_CREATED)
+        child = Children.objects.get(children_id=serializer.data['children_id'])
+        self.suscribedChildren(child)
+
+        return Response({"message": "Children successfully created", "data": serializer.data}, status=status.HTTP_201_CREATED)
+    
+    def suscribedChildren(self, child):
+        grade = child.children_grade
+        if grade is None:
+            return
+
+        today = datetime.date.today()
+        activities = Activities.objects.filter(
+            activities_program__programs_grade=grade,
+            activities_program__programs_start__gte=today
+        )
+
+        if not activities.exists():
+            return
+
+        # Validar duplicados
+        existing_subscriptions = SubscriptionsChildren.objects.filter(
+            subscriptions_children_child=child,
+            subscriptions_children_activity__in=activities
+        ).values_list('subscriptions_children_activity', flat=True)
+
+        new_activities = [activity for activity in activities if activity.activities_id not in existing_subscriptions]
+
+        subscriptions = [
+            SubscriptionsChildren(
+                subscriptions_children_child=child,
+                subscriptions_children_activity=activity
+            )
+            for activity in new_activities
+        ]
+        SubscriptionsChildren.objects.bulk_create(subscriptions)
+
+        # Crear las entradas de PerformanceBeneficiaries
+        subscriptions_instances = SubscriptionsChildren.objects.filter(
+            subscriptions_children_child=child
+        )
+        performances = [
+            PerformanceBeneficiaries(
+                performance_beneficiaries_value=None,
+                performance_beneficiaries_subscription=sub
+            )
+            for sub in subscriptions_instances
+        ]
+        PerformanceBeneficiaries.objects.bulk_create(performances)
+
+
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -125,6 +169,8 @@ class ChildrensViewSet(viewsets.ModelViewSet):
         return Response({
             "message": "Children successfully deleted"
         }, status=status.HTTP_204_NO_CONTENT)
+
+
 
 
 class PerformanceBeneficiariesViewSet(viewsets.ModelViewSet):

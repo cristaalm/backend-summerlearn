@@ -101,7 +101,27 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    
+
+    def partial_update(self, request, *args, **kwargs):
+        # Obtenemos el usuario a modificar
+        instance = self.get_object()
+        # Obtenemos el nuevo estado
+        new_status = request.data.get('users_status')
+        # Obtenemos el estado actual
+        current_status = instance.users_status.status_id
+
+        if current_status == 4 and new_status == 1:
+            # Creamos un diccionario con los datos del usuario
+            data = {
+                'email': instance.email,
+                'name': instance.name
+            }
+            # Enviamos el correo de aceptación
+            send_mail_accepted(data)
+        
+        # Ejecutamos la función original de la clase ModelViewSet
+        return super().partial_update(request, *args, **kwargs)
+
     # Custom action to filter users by id_rol
     @action(detail=False, methods=['get'], url_path='by-id-rol')
     def get_by_rol(self, request):
@@ -121,7 +141,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'id_status is required'}, status=HTTP_400_BAD_REQUEST)
         
         # Filter users by status and exclude those with role 3
-        users_by_status = UserData.objects.filter(users_status=id_status).exclude(users_rol=3).values(
+        users_by_status = UserData.objects.filter(users_status=id_status).values(
             'id', 'users_photo', 'name', 'email', 'users_rol__rol_name', 'users_status__status_name'
         )
         return Response(users_by_status)
